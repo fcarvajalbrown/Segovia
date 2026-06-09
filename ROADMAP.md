@@ -8,7 +8,12 @@ is the authoritative summary that release and version decisions are made against
 
 - **Version:** `0.0.0` — pre-implementation. First runnable code landed (day-1 zero-copy NumPy spike).
 - **Phase:** M0–2 (learn + read + de-risk tooling) — in progress; the day-1 maturin/zero-copy NumPy
-  toolchain spike is done.
+  toolchain spike is done, and the **chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader** lands the
+  phase deliverable (`segovia.SpikeGlxReader`, streaming `(samples, channels)` `int16` chunks),
+  validated byte-for-byte against the real `Noise4Sam_g0` Neuropixels recording from the NEO
+  `ephy_testing_data` corpus. Still open in M0–2: Zarr (`zarrs`) reader and a realistic-scale,
+  full-1-hour memory-bounded run (e.g. IBL data, which is `mtscomp`-compressed `.cbin` and needs a
+  decompression path).
 
 ## The one gate that decides everything (SC1)
 
