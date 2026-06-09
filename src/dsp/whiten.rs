@@ -1,0 +1,116 @@
+use nalgebra::{DMatrix, SymmetricEigen};
+use numpy::ndarray::{Array1, Array2, Axis};
+
+pub struct Whitener {
+    w: Array2<f64>,
+    mean: Option<Array1<f64>>,
+}
+
+impl Whitener {
+    pub fn estimate(calib: &Array2<f64>, eps: f64, apply_mean: bool) -> Self {
+        let n = calib.nrows();
+        let c = calib.ncols();
+
+        let mean = if apply_mean {
+            Some(calib.mean_axis(Axis(0)).expect("non-empty calibration"))
+        } else {
+            None
+        };
+
+        let mut centered = calib.to_owned();
+        if let Some(m) = &mean {
+            for mut row in centered.rows_mut() {
+                row -= m;
+            }
+        }
+
+        let cov = centered.t().dot(&centered) / (n as f64);
+
+        let mut dm = DMatrix::<f64>::zeros(c, c);
+        for i in 0..c {
+            for j in 0..c {
+                dm[(i, j)] = cov[[i, j]];
+            }
+        }
+
+        let eig = SymmetricEigen::new(dm);
+        let vals = &eig.eigenvalues;
+        let vecs = &eig.eigenvectors;
+
+        let mut d = DMatrix::<f64>::zeros(c, c);
+        for i in 0..c {
+            d[(i, i)] = 1.0 / (vals[i] + eps).sqrt();
+        }
+        let w_dm = vecs * d * vecs.transpose();
+
+        let mut w = Array2::<f64>::zeros((c, c));
+        for i in 0..c {
+            for j in 0..c {
+                w[[i, j]] = w_dm[(i, j)];
+            }
+        }
+
+        Self { w, mean }
+    }
+
+    pub fn apply(&self, chunk: &Array2<f64>) -> Array2<f64> {
+        match &self.mean {
+            Some(m) => {
+                let mut centered = chunk.to_owned();
+                for mut row in centered.rows_mut() {
+                    row -= m;
+                }
+                centered.dot(&self.w)
+            }
+            None => chunk.dot(&self.w),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use numpy::ndarray::Array2;
+
+    #[test]
+    fn whitened_data_has_identity_covariance() {
+        let n = 4000;
+        let c = 3;
+        let mut data = Array2::<f64>::zeros((n, c));
+        let mut s: u64 = 1;
+        let mut rng = || {
+            s = s
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            ((s >> 33) as f64) / (1u64 << 31) as f64 - 1.0
+        };
+        for i in 0..n {
+            let a = rng();
+            let b = rng();
+            let d = rng();
+            data[[i, 0]] = 2.0 * a;
+            data[[i, 1]] = a + 0.5 * b;
+            data[[i, 2]] = a - b + 0.3 * d;
+        }
+
+        let w = Whitener::estimate(&data, 0.0, true);
+        let out = w.apply(&data);
+
+        let mean = out.mean_axis(Axis(0)).unwrap();
+        let mut centered = out.clone();
+        for mut row in centered.rows_mut() {
+            row -= &mean;
+        }
+        let cov = centered.t().dot(&centered) / (n as f64);
+        for i in 0..c {
+            for j in 0..c {
+                let expected = if i == j { 1.0 } else { 0.0 };
+                assert!(
+                    (cov[[i, j]] - expected).abs() < 1e-6,
+                    "cov[{i},{j}] = {} expected {expected}",
+                    cov[[i, j]]
+                );
+            }
+        }
+    }
+}
