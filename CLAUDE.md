@@ -88,8 +88,11 @@ skills (none yet) live under `.claude/skills/`.
 
 ## Project state (2026-06-09)
 
-- **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). Scaffolded and **pre-MVP** — no
-  compute logic yet, nothing published to crates.io/PyPI.
+- **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **First runnable code landed** — the
+  day-1 zero-copy NumPy spike (`segovia.zeros`, `segovia.__version__`), merged via PR #2 with CI green
+  on Windows/macOS/Linux. The `segovia` crate is **not yet published**: publishing to crates.io is the
+  immediate next action (a prior auto-publish was blocked by the safety classifier; it needs explicit
+  approval or a user-run `cargo publish --token ...`). PyPI not yet.
 - **Scaffold:** standalone `segovia` crate with `src/` core/ephys module seams, `pyproject.toml` +
   maturin packaging, **AGPL-3.0-or-later** license, `.github/` CI (fmt/clippy/test + maturin wheel
   matrix) and issue/PR templates, `ROADMAP.md` (version SSoT), `CHANGELOG.md`, `CITATION.cff`,
@@ -99,11 +102,10 @@ skills (none yet) live under `.claude/skills/`.
   *differentiation* play via **path E (interop)** built on **`scverse/anndata-rs`** — NOT a SingleRust
   dependency (SingleRust is in-memory). Deferred and gated to a post-ship **M12+** phase. Full verdict
   and the BPCells-Python monitor live in `docs/future/leukemia-direction.md`.
-- **GitHub page setup — still TODO** (SEO-first, do when ready): set the About **description**; add
-  **topics** (`rust`, `python`, `pyo3`, `neuroscience`, `electrophysiology`, `neuropixels`,
-  `spike-sorting`, `spikeinterface`, `signal-processing`, `time-series`, `zarr`, `nwb`, `dsp`,
-  `scientific-computing`); upload `assets/segovia-social.png` as the social preview; set the Website
-  field; enable Issues + Discussions.
+- **GitHub page setup:** topics **set** ✅. Still TODO: set the About **description**, upload
+  `assets/segovia-social.png` as the social preview, set the Website field, enable Issues + Discussions.
+- **Next up (next session):** publish the `segovia` crate (AGPL); then M0–2 roadmap work — the SpikeGLX
+  `.meta`/`.bin` + Zarr chunked, memory-bounded reader.
 
 ## What this is
 
