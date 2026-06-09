@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use Segovia in your research, please cite it as below."
+title: "Segovia: a chunked, memory-bounded Rust engine for electrophysiology signal processing"
+abstract: >-
+  Segovia is a lazy-evaluated, chunked, concurrent Rust compute engine for massive multi-channel
+  electrophysiology time-series (Neuropixels-scale), exposed to Python via PyO3 and built to
+  integrate with the SpikeInterface ecosystem over SpikeGLX, Zarr, and NWB. It targets bounded-memory,
+  out-of-core streaming preprocessing with GIL-released shared-memory threading.
+type: software
+authors:
+  - given-names: Felipe
+    family-names: "Carvajal Brown"
+    email: fcarvajalbrown@gmail.com
+keywords:
+  - neuroscience
+  - electrophysiology
+  - neuropixels
+  - spike-sorting
+  - signal-processing
+  - rust
+  - python
+  - out-of-core
+license: "MIT OR Apache-2.0"
+repository-code: "https://github.com/fcarvajalbrown/segovia"
+version: 0.0.0
