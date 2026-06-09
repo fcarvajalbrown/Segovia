@@ -131,7 +131,9 @@ Resolved with the maintainer:
   CMR + whiten) together**, not a single op — the most realistic go/no-go test. See `roadmap.md`.
 - **Architecture posture — RESOLVED.** Domain-neutral `segovia-core` + thin `segovia-ephys` vertical;
   a single-cell (leukemia-relevant) vertical is a *designed-for but uncommitted* future direction
-  (the "90/10"). See `adr/0008` and `docs/future/leukemia-direction.md`. Build no second vertical now.
+  (the "90/10"). The 2026-06-09 deep-research confirmed it would be a *differentiation* play via interop
+  on `anndata-rs` (not a SingleRust dependency) if ever pursued. See `adr/0008` and
+  `docs/future/leukemia-direction.md`. Build no second vertical now.
 
 Still open (resolve before the relevant milestone):
 

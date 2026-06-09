@@ -41,5 +41,25 @@ and a scheduler decoupled from any domain semantics.
 - Keeps option value cheap and honest: the 10% is *design + domain literacy*, not impact yet. Do not
   let it become a story that makes ephys work feel like leukemia work — it isn't, until a vertical or
   upstream contribution ships.
-- Compatible with several future realizations (dependency on / contribution to / learning from
-  SingleRust, or a native vertical, or an interop backend) — see `docs/future/leukemia-direction.md`.
+- Compatible with several future realizations — resolved by the 2026-06-09 deep-research to **path E
+  (interop)**, building on `scverse/anndata-rs`, **not** a SingleRust dependency. See the Update below
+  and `docs/future/leukemia-direction.md`.
+
+## Update (2026-06-09) — deep-research verdict
+
+The multi-agent deep-research on the single-cell vertical completed (101 agents, 19 primary sources,
+25 adversarially-verified claims). It does **not** change this ADR's core decision — keep
+`segovia-core` domain-neutral, build no second vertical now — but it resolves the realization path and
+corrects one premise:
+
+- The out-of-core / bounded-memory **capability** gap in single-cell is essentially **closed** by
+  shipped tools (BPCells in C++, Scarf in Python). The vertical is therefore a **differentiation**
+  play (Rust + GIL-released threading + throughput + Python ergonomics), not a novel-capability play.
+- **SingleRust is in-memory** (it explicitly declines full out-of-core), so the "dependency on
+  SingleRust" option is **rejected**. The genuine Rust build-on substrate is **`scverse/anndata-rs`**
+  (official out-of-core AnnData crate). Realization is via **path E (interop)**; a native vertical
+  (path C) is weak.
+- Open meta-question carried forward: single-cell (sparse matrices) may not be the right second
+  vertical at all versus ephys-native out-of-core (dense continuous signal). Resolve before any
+  single-cell commitment. Full verdict and the BPCells-Python monitor live in
+  `docs/future/leukemia-direction.md`.

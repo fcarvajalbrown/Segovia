@@ -56,6 +56,29 @@ Python incumbent on the operations that matter?* Do not build the full engine be
   failures now running in bounded memory (SC3).
 - **Deliverable:** v0.x public release; reproducible benchmarks; SpikeInterface integration demo.
 
+## M12+ · Future vertical — single-cell / leukemia (GATED · post-ship · NOT in the 12-month scope)
+
+This is the **only** point where leukemia-relevant work could begin — *after* the ephys engine has
+shipped, and only if it earns it. Nothing here is committed. During M0–12 we merely keep
+`segovia-core` domain-neutral (ADR 0008) so this stays possible at **zero cost** — no single-cell code
+is written before this phase.
+
+- **Entry gates (all three must hold before any single-cell code):**
+  - The ephys engine passed the M2–4 benchmark gate and shipped (M10–12 complete).
+  - The open question is answered: is single-cell the right second vertical at all, vs. **ephys-native
+    out-of-core**? Single-cell tools are sparse-matrix tools — a different shape from dense brain signal.
+  - The opening still exists — re-check the **BPCells-Python monitor**; if BPCells' Python streaming has
+    caught up, the gap has closed and this does not proceed.
+- **If pursued — how (resolved by the 2026-06-09 deep-research):** a **differentiation** play, not a
+  novel capability (BPCells and Scarf already close the out-of-core single-cell gap). Realize via
+  **path E (interop)** built on `scverse/anndata-rs` — **not** a SingleRust dependency (it is
+  in-memory), and not a from-scratch native vertical. Compete on Rust + GIL-released threading +
+  throughput + Python ergonomics.
+- **Deliverable (only if green-lit):** a go/no-go decision memo — *not* code — until all three gates
+  pass. Honest guardrail: ephys work does not fight leukemia until a vertical or an upstream
+  contribution actually ships. Full verdict, options, and the monitor live in
+  `docs/future/leukemia-direction.md`.
+
 ---
 
 ## Milestone summary
@@ -67,19 +90,9 @@ Python incumbent on the operations that matter?* Do not build the full engine be
 | Real engine | 4–7 | Lazy graph + Python API | A (crate + PyO3) | `pip install` + 10-line demo |
 | Breadth | 7–10 | More ops + correctness | A | Op library + tests |
 | Ship | 10–12 | SI backend + release | A (+ optional B) | Public release + benchmarks |
+| _Future vertical (gated)_ | _12+_ | _single-cell / leukemia (interop)_ | _segovia-core + anndata-rs_ | _post-ship; 3 entry gates_ |
 
 ## The one rule
 
 **Nothing downstream of M4 matters if the M2–4 gate fails.** Protect that experiment: keep the
 MVP chain small, benchmark honestly, and be willing to stop.
-
----
-
-## Future verticals (PENDING — not in the 12-month scope)
-
-Segovia is built as a domain-neutral `segovia-core` + the `segovia-ephys` vertical (ADR 0008). A
-**single-cell genomics vertical** — the computational backbone of modern leukemia research — is an
-anticipated but **uncommitted** future direction (the "10%"). It is *not* part of this 12-month plan;
-only the core's seams are kept clean to make it possible later. Findings, options, and pending tasks
-live in `docs/future/leukemia-direction.md`. Guardrail: build no second vertical or speculative
-abstraction now (YAGNI).
