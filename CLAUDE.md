@@ -90,9 +90,8 @@ skills (none yet) live under `.claude/skills/`.
 
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **First runnable code landed** — the
   day-1 zero-copy NumPy spike (`segovia.zeros`, `segovia.__version__`), merged via PR #2 with CI green
-  on Windows/macOS/Linux. The `segovia` crate is **not yet published**: publishing to crates.io is the
-  immediate next action (a prior auto-publish was blocked by the safety classifier; it needs explicit
-  approval or a user-run `cargo publish --token ...`). PyPI not yet.
+  on Windows/macOS/Linux. The `segovia` crate is **published on crates.io at v0.0.0**
+  (AGPL-3.0-or-later, published manually 2026-06-09). **PyPI not yet.**
 - **Scaffold:** standalone `segovia` crate with `src/` core/ephys module seams, `pyproject.toml` +
   maturin packaging, **AGPL-3.0-or-later** license, `.github/` CI (fmt/clippy/test + maturin wheel
   matrix) and issue/PR templates, `ROADMAP.md` (version SSoT), `CHANGELOG.md`, `CITATION.cff`,
@@ -104,8 +103,24 @@ skills (none yet) live under `.claude/skills/`.
   and the BPCells-Python monitor live in `docs/future/leukemia-direction.md`.
 - **GitHub page setup:** topics **set** ✅. Still TODO: set the About **description**, upload
   `assets/segovia-social.png` as the social preview, set the Website field, enable Issues + Discussions.
-- **Next up (next session):** publish the `segovia` crate (AGPL); then M0–2 roadmap work — the SpikeGLX
-  `.meta`/`.bin` + Zarr chunked, memory-bounded reader.
+- **Next up (next session):** (1) **automate package publishing** — see the TODO below; (2) M0–2
+  roadmap work — the SpikeGLX `.meta`/`.bin` + Zarr chunked, memory-bounded reader.
+
+## TODO (next session) — automate package publishing ("set it and forget it")
+
+The crates.io publish was manual. Next session, wire publishing into CI so a deliberate release ships
+both packages automatically:
+
+- **Rotate keys.** Revoke the crates.io token used 2026-06-09 (it was pasted in chat) and create a
+  **new** crates.io token. For PyPI, prefer **Trusted Publishing (OIDC)** so no token is stored at all;
+  otherwise create a PyPI API token.
+- **Store them as GitHub Actions *secrets*** (encrypted) — **not** plaintext repo "variables": e.g.
+  `CARGO_REGISTRY_TOKEN` (and `PYPI_API_TOKEN` if not using Trusted Publishing).
+- **Add `.github/workflows/release.yml`** triggered on a `v*` tag / published GitHub Release: run
+  `cargo publish` for the crate and build + upload PyPI wheels via `PyO3/maturin-action`. Then a
+  release publishes both automatically — no manual `cargo publish`.
+- Keep a release deliberate (tag = approved event), and link each release to an Announcements
+  discussion (`gh release create <tag> --discussion-category "Announcements"`).
 
 ## What this is
 
