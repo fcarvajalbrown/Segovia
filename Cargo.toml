@@ -19,3 +19,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 pyo3 = "0.28"
+numpy = "0.28"
