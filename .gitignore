@@ -31,3 +31,5 @@ Thumbs.db
 .claude/settings.local.json
 
 .env
+
+tests/data/

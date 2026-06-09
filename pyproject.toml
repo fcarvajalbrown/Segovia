@@ -39,6 +39,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
+[project.optional-dependencies]
+test = ["pytest", "numpy", "zarr>=3"]
+
 [project.urls]
 Homepage = "https://github.com/fcarvajalbrown/Segovia"
 Repository = "https://github.com/fcarvajalbrown/Segovia"
