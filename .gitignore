@@ -29,3 +29,5 @@ Thumbs.db
 
 .claude/state/
 .claude/settings.local.json
+
+.env
