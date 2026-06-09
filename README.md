@@ -25,10 +25,12 @@ memory.
 
 ## Status
 
-**Early development — pre-MVP (v0.1.0).** The first functional piece has shipped: a chunked,
-memory-bounded **SpikeGLX `.meta`/`.bin` reader** (`segovia.SpikeGlxReader`), published to
-[crates.io](https://crates.io/crates/segovia) and [PyPI](https://pypi.org/project/segovia/) at
-v0.1.0 — `pip install segovia` works. The compute engine (the **bandpass → CMR → whiten** chain) is
+**Early development — pre-MVP.** The first functional pieces have shipped: two chunked,
+memory-bounded readers that stream a recording as `(samples, channels)` `int16` chunks behind a
+shared `ChunkSource` contract — a **SpikeGLX `.meta`/`.bin` reader** (`segovia.SpikeGlxReader`,
+v0.1.0) and a **Zarr reader** (`segovia.ZarrReader`, gzip/zstd/blosc), published to
+[crates.io](https://crates.io/crates/segovia) and [PyPI](https://pypi.org/project/segovia/) —
+`pip install segovia` works. The compute engine (the **bandpass → CMR → whiten** chain) is
 **not built yet**, so parts of the quickstart below still describe the **target** API. The whole
 premise rests on one make-or-break benchmark — see [The benchmark gate](#the-benchmark-gate). Follow
 the [roadmap](ROADMAP.md) for progress.

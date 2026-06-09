@@ -23,6 +23,7 @@ numpy = "0.28"
 memmap2 = "0.9"
 bytemuck = "1"
 thiserror = "2"
+zarrs = { version = "0.23", default-features = false, features = ["filesystem", "gzip", "zstd", "blosc"] }
 
 [dev-dependencies]
 tempfile = "3"

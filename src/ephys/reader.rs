@@ -6,6 +6,7 @@ use memmap2::Mmap;
 use numpy::ndarray::Array2;
 use thiserror::Error;
 
+use crate::core::ChunkSource;
 use crate::ephys::meta::{MetaError, SpikeGlxMeta};
 
 #[derive(Debug, Error)]
@@ -54,20 +55,24 @@ impl SpikeGlxReader {
     pub fn meta(&self) -> &SpikeGlxMeta {
         &self.meta
     }
+}
 
-    pub fn n_channels(&self) -> usize {
+impl ChunkSource for SpikeGlxReader {
+    type Chunks = ChunkIter;
+
+    fn n_channels(&self) -> usize {
         self.meta.n_channels
     }
 
-    pub fn sample_rate(&self) -> f64 {
+    fn sample_rate(&self) -> f64 {
         self.meta.sample_rate
     }
 
-    pub fn n_samples(&self) -> usize {
+    fn n_samples(&self) -> usize {
         self.n_samples
     }
 
-    pub fn chunks(&self, chunk_samples: usize) -> ChunkIter {
+    fn chunks(&self, chunk_samples: usize) -> ChunkIter {
         ChunkIter {
             mmap: Arc::clone(&self.mmap),
             n_channels: self.meta.n_channels,

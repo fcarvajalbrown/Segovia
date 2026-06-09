@@ -8,10 +8,12 @@ is the authoritative summary that release and version decisions are made against
 
 - **Version:** `0.1.0` — first functional release: the chunked, memory-bounded SpikeGLX reader, live on crates.io + PyPI (2026-06-09).
 - **Phase:** M0–2 (learn + read + de-risk tooling) — in progress; the day-1 maturin/zero-copy NumPy
-  toolchain spike is done, and the **chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader** lands the
-  phase deliverable (`segovia.SpikeGlxReader`, streaming `(samples, channels)` `int16` chunks),
-  validated byte-for-byte against the real `Noise4Sam_g0` Neuropixels recording from the NEO
-  `ephy_testing_data` corpus. Still open in M0–2: Zarr (`zarrs`) reader and a realistic-scale,
+  toolchain spike is done, the **chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader**
+  (`segovia.SpikeGlxReader`) landed the phase deliverable, and a second **chunked, memory-bounded
+  Zarr reader** (`segovia.ZarrReader`, `zarrs` crate, gzip/zstd/blosc) now streams the same
+  `(samples, channels)` `int16` chunks behind a shared `ChunkSource` trait — validated against the
+  real `Noise4Sam_g0` recording, where it yields byte-identical chunks to the SpikeGLX reader for the
+  recording re-encoded through all three codecs (ADR 0011). Still open in M0–2: a realistic-scale,
   full-1-hour memory-bounded run (e.g. IBL data, which is `mtscomp`-compressed `.cbin` and needs a
   decompression path).
 

@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- Chunked, memory-bounded Zarr reader (`segovia.ZarrReader`): opens a 2-D `int16` array node
+  (default `/traces`) in a Zarr v2/v3 store via the `zarrs` crate and streams it in the same
+  `(samples, channels)` `int16` chunks as the SpikeGLX reader (ADR 0010), retrieving one
+  `(chunk_samples, channels)` region at a time so application memory stays bounded regardless of
+  store size, with the GIL released during each chunk copy. `sample_rate` is read from the array's
+  `sampling_frequency` attribute. Reads gzip-, zstd-, and blosc-compressed stores — covering both
+  `zarr-python`'s and SpikeInterface's default compressors. Validated against the real `Noise4Sam_g0`
+  recording: the Zarr reader yields byte-identical chunks to `SpikeGlxReader` for the recording
+  re-encoded through all three codecs.
+- `ChunkSource` trait (`n_channels` / `n_samples` / `sample_rate` / `chunks`) shared by
+  `SpikeGlxReader` and `ZarrReader` as the engine-wide chunk-producer contract. See ADR 0011.
+
 ## [0.1.0] - 2026-06-09
 
 ### Added
