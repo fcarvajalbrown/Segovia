@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-09
+
 ### Added
 - Chunked, memory-bounded Zarr reader (`segovia.ZarrReader`): opens a 2-D `int16` array node
   (default `/traces`) in a Zarr v2/v3 store via the `zarrs` crate and streams it in the same

@@ -6,7 +6,7 @@ is the authoritative summary that release and version decisions are made against
 
 ## Current status
 
-- **Version:** `0.1.0` — two chunked, memory-bounded readers (SpikeGLX + Zarr) behind a shared `ChunkSource` trait, live on crates.io + PyPI.
+- **Version:** `0.2.0` — two chunked, memory-bounded readers (SpikeGLX + Zarr) behind a shared `ChunkSource` trait, live on crates.io + PyPI.
 - **Phase:** M0–2 (learn + read + de-risk tooling) — in progress; the day-1 maturin/zero-copy NumPy
   toolchain spike is done, the **chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader**
   (`segovia.SpikeGlxReader`) landed the phase deliverable, and a second **chunked, memory-bounded
