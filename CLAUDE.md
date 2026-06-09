@@ -80,16 +80,36 @@ that. State what a thing does and what it does not do. No hedging, no inflation.
 
 ### Versioning & release mechanics
 
+**One number; everything else derives from it — never hand-maintain a second copy.** `Cargo.toml`
+`version` is the only place a version is written. Every shipped surface reads from it, so they
+*cannot* drift:
+
+- **crates.io** ← `Cargo.toml` directly (it *is* the manifest).
+- **PyPI wheel + sdist** ← `maturin` reads `Cargo.toml`, because `pyproject.toml` declares
+  `dynamic = ["version"]` and carries **no** static `version` field. (This is the exact MaskOps
+  trap — a hand-kept `pyproject` version — and it is now structurally impossible.)
+- **`segovia.__version__`** ← `env!("CARGO_PKG_VERSION")` in `src/lib.rs`, i.e. `Cargo.toml` at
+  compile time.
+- **git tag** ← `cargo-release` creates `v{{version}}` from `Cargo.toml`; then `release.yml`'s
+  `verify-version` job re-asserts `tag == Cargo.toml version` and **fails the publish on any
+  mismatch** (belt and suspenders).
+
+The only files that hold a *literal* number are docs, and `cargo-release` rewrites them in the same
+bump commit via `pre-release-replacements` (`release.toml`): `CHANGELOG.md` (`[Unreleased]` → version
++ date), `CITATION.cff` (`version:` + `date-released:`), and `ROADMAP.md` (`**Version:**`). So **a
+release is one command** — `cargo release <minor|patch> --execute` — and nothing is edited by hand.
+
 - **SemVer, pre-1.0 (`0.MINOR.PATCH`):** `feat` → minor; `fix`/`perf`/`refactor` → patch; a breaking
   change (`!` / `BREAKING CHANGE`) → minor while `< 1.0`. `chore`/`docs`/`ci`/`style`/`test` alone →
   no release. The squash-merge's conventional-commit type selects the bump.
-- **Tooling:** `cargo-release` performs the bump + changelog + tag. A `v*`-tag-triggered
-  `release.yml` runs `cargo publish` and builds + uploads PyPI wheels via `PyO3/maturin-action`.
-  `pyproject.toml` uses `dynamic = ["version"]` so the wheel version is always read from `Cargo.toml`.
-- **Not yet wired (blocks a real publish):** `release.yml`, the `cargo-release` config, the `dynamic`
-  pyproject switch, and rotated / Trusted-Publishing credentials are still TODO (see the
-  publishing-automation TODO below). Until they exist, only the GitHub side (tag + release +
-  Announcements discussion) can be done by hand — crates.io/PyPI will not publish automatically.
+- **Publish pipeline:** publishing a GitHub release (`gh release create v* --discussion-category
+  "Announcements"`) fires `release.yml` → `verify-version` → `cargo publish` (via the
+  `CARGO_REGISTRY_TOKEN` secret) + maturin wheels/sdist → PyPI via Trusted Publishing (OIDC, the
+  `pypi` environment; no token stored). `cargo-release` itself does **not** publish (`publish = false`).
+- **One-time setup state:** `release.yml`, `release.toml`, the `dynamic` pyproject switch, the
+  `CARGO_REGISTRY_TOKEN` secret, and the `pypi` environment are all in place. Still required on the
+  host that cuts a release: `cargo install cargo-release`; and PyPI's Trusted-Publishing entry for
+  this repo must exist before the first PyPI upload.
 
 ## Automated publishing reminders (LinkedIn + dev.to) — ACTIVE
 
