@@ -9,5 +9,7 @@ All notable changes to this project are documented here. The format is based on
 ### Added
 - Initial repository scaffold: Rust crate + PyO3/maturin Python packaging, architecture docs,
   dual MIT/Apache-2.0 license, CI, and contributor/community files.
+- Day-1 zero-copy bridge spike: `segovia.zeros(channels, samples)` returns an `int16` NumPy array
+  backed by Rust-owned memory (no copy), plus `segovia.__version__`.
 
 [Unreleased]: https://github.com/fcarvajalbrown/Segovia/commits/main

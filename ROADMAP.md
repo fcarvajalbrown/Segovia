@@ -6,8 +6,9 @@ is the authoritative summary that release and version decisions are made against
 
 ## Current status
 
-- **Version:** `0.0.0` — pre-implementation scaffold. No functionality yet.
-- **Phase:** M0–2 (learn + read + de-risk tooling) has not started.
+- **Version:** `0.0.0` — pre-implementation. First runnable code landed (day-1 zero-copy NumPy spike).
+- **Phase:** M0–2 (learn + read + de-risk tooling) — in progress; the day-1 maturin/zero-copy NumPy
+  toolchain spike is done.
 
 ## The one gate that decides everything (SC1)
 
