@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- Chunked, memory-bounded mtscomp `.cbin` reader (`segovia.CbinReader`): opens an IBL/SpikeGLX
+  `.cbin` + `.ch` file pair and streams it in the same `(samples, channels)` `int16` chunks as the
+  SpikeGLX and Zarr readers behind the `ChunkSource` trait. Reads only each chunk's compressed bytes
+  via positioned reads (so peak memory is independent of file size, not a whole-file mmap); each
+  ~1-second mtscomp native chunk is `zlib`-inflated (`flate2`) and its time-delta reversed by an
+  `i16` wrapping cumulative sum; native chunks are re-chunked to the caller's `chunk_samples` with
+  resident memory bounded by `max(native_chunk, chunk_samples)` rows, and the GIL released during
+  each chunk. Honors `chunk_order` `F`/`C`; rejects spatial-diff, non-`int16`, and non-`zlib` files
+  with typed errors. Validated byte-identical against the real `Noise4Sam_g0` recording round-tripped
+  through the `mtscomp` compressor, and streamed a real 46-minute 385-channel IBL LF recording
+  (5.32 GB decompressed) in 186 MB peak RSS. See ADR 0012.
+
 ## [0.2.0] - 2026-06-09
 
 ### Added

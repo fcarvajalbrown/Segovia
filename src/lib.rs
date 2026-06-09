@@ -9,6 +9,7 @@ mod core;
 mod ephys;
 
 use core::ChunkSource;
+use ephys::cbin::{CbinChunkIter, CbinError};
 use ephys::reader::{ChunkIter, ReaderError};
 use ephys::zarr::{ZarrChunkIter, ZarrError};
 
@@ -27,6 +28,16 @@ impl From<ZarrError> for PyErr {
         let message = err.to_string();
         match err {
             ZarrError::Store { .. } | ZarrError::Array { .. } => PyIOError::new_err(message),
+            _ => PyValueError::new_err(message),
+        }
+    }
+}
+
+impl From<CbinError> for PyErr {
+    fn from(err: CbinError) -> PyErr {
+        let message = err.to_string();
+        match err {
+            CbinError::Io(_) => PyIOError::new_err(message),
             _ => PyValueError::new_err(message),
         }
     }
@@ -179,6 +190,70 @@ impl PyZarrChunks {
     }
 }
 
+#[pyclass(name = "CbinReader")]
+struct PyCbinReader {
+    inner: ephys::cbin::CbinReader,
+}
+
+#[pymethods]
+impl PyCbinReader {
+    #[new]
+    #[pyo3(signature = (cbin_path, ch_path = None))]
+    fn new(cbin_path: PathBuf, ch_path: Option<PathBuf>) -> PyResult<Self> {
+        let ch_path = ch_path.unwrap_or_else(|| cbin_path.with_extension("ch"));
+        let inner = ephys::cbin::CbinReader::open(&cbin_path, &ch_path)?;
+        Ok(Self { inner })
+    }
+
+    #[getter]
+    fn n_channels(&self) -> usize {
+        self.inner.n_channels()
+    }
+
+    #[getter]
+    fn sample_rate(&self) -> f64 {
+        self.inner.sample_rate()
+    }
+
+    #[getter]
+    fn n_samples(&self) -> usize {
+        self.inner.n_samples()
+    }
+
+    #[pyo3(signature = (chunk_samples))]
+    fn chunks(&self, chunk_samples: usize) -> PyResult<PyCbinChunks> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        Ok(PyCbinChunks {
+            inner: self.inner.chunks(chunk_samples),
+        })
+    }
+}
+
+#[pyclass(name = "CbinChunks")]
+struct PyCbinChunks {
+    inner: CbinChunkIter,
+}
+
+#[pymethods]
+impl PyCbinChunks {
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__<'py>(
+        mut slf: PyRefMut<'py, Self>,
+        py: Python<'py>,
+    ) -> Option<Bound<'py, PyArray2<i16>>> {
+        let inner = &mut slf.inner;
+        let next = py.detach(|| inner.next());
+        next.map(|array| array.into_pyarray(py))
+    }
+}
+
 #[pymodule]
 fn segovia(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
@@ -187,5 +262,7 @@ fn segovia(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySpikeGlxChunks>()?;
     m.add_class::<PyZarrReader>()?;
     m.add_class::<PyZarrChunks>()?;
+    m.add_class::<PyCbinReader>()?;
+    m.add_class::<PyCbinChunks>()?;
     Ok(())
 }
