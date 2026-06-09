@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-09
+
 ### Added
 - Chunked, memory-bounded mtscomp `.cbin` reader (`segovia.CbinReader`): opens an IBL/SpikeGLX
   `.cbin` + `.ch` file pair and streams it in the same `(samples, channels)` `int16` chunks as the
