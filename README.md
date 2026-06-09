@@ -25,11 +25,13 @@ memory.
 
 ## Status
 
-**Early development — pre-MVP.** This repository is currently architecture docs plus a project
-scaffold; the compute engine is not built yet and **nothing is published to crates.io or PyPI**. The
-install and quickstart below describe the **target** API, not a shipped one. Follow the
-[roadmap](ROADMAP.md) for progress. The whole premise rests on one make-or-break benchmark — see
-[The benchmark gate](#the-benchmark-gate).
+**Early development — pre-MVP (v0.1.0).** The first functional piece has shipped: a chunked,
+memory-bounded **SpikeGLX `.meta`/`.bin` reader** (`segovia.SpikeGlxReader`), published to
+[crates.io](https://crates.io/crates/segovia) and [PyPI](https://pypi.org/project/segovia/) at
+v0.1.0 — `pip install segovia` works. The compute engine (the **bandpass → CMR → whiten** chain) is
+**not built yet**, so parts of the quickstart below still describe the **target** API. The whole
+premise rests on one make-or-break benchmark — see [The benchmark gate](#the-benchmark-gate). Follow
+the [roadmap](ROADMAP.md) for progress.
 
 ## Contents
 
