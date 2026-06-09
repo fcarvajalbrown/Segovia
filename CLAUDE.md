@@ -91,7 +91,7 @@ skills (none yet) live under `.claude/skills/`.
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). Scaffolded and **pre-MVP** — no
   compute logic yet, nothing published to crates.io/PyPI.
 - **Scaffold:** standalone `segovia` crate with `src/` core/ephys module seams, `pyproject.toml` +
-  maturin packaging, **dual MIT OR Apache-2.0** license, `.github/` CI (fmt/clippy/test + maturin wheel
+  maturin packaging, **AGPL-3.0-or-later** license, `.github/` CI (fmt/clippy/test + maturin wheel
   matrix) and issue/PR templates, `ROADMAP.md` (version SSoT), `CHANGELOG.md`, `CITATION.cff`,
   `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, and a project `.venv`.
 - **Single-cell / leukemia vertical — deep-research COMPLETE.** Verdict: the out-of-core capability

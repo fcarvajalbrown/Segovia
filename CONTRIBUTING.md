@@ -36,5 +36,5 @@ cargo test
 
 ## Licensing of contributions
 
-Unless you state otherwise, any contribution you submit is dual-licensed under
-**MIT OR Apache-2.0**, the same terms as the project, without any additional conditions.
+Unless you state otherwise, any contribution you submit is licensed under
+**AGPL-3.0-or-later**, the same terms as the project, without any additional conditions.

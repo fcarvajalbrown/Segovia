@@ -20,6 +20,6 @@ keywords:
   - rust
   - python
   - out-of-core
-license: "MIT OR Apache-2.0"
+license: "AGPL-3.0-or-later"
 repository-code: "https://github.com/fcarvajalbrown/Segovia"
 version: 0.0.0

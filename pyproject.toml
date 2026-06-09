@@ -8,8 +8,8 @@ version = "0.0.0"
 description = "A fast, chunked, memory-bounded Rust engine for electrophysiology (Neuropixels) signal processing, with Python bindings."
 readme = "README.md"
 requires-python = ">=3.8"
-license = "MIT OR Apache-2.0"
-license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 authors = [{ name = "Felipe Carvajal Brown", email = "fcarvajalbrown@gmail.com" }]
 keywords = [
     "neuroscience",

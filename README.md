@@ -7,7 +7,7 @@
   <a href="https://crates.io/crates/segovia"><img src="https://img.shields.io/crates/v/segovia?style=flat-square&color=CE422B&logo=rust&logoColor=white" alt="crates.io"/></a>
   <a href="https://pypi.org/project/segovia/"><img src="https://img.shields.io/pypi/v/segovia?style=flat-square&color=CE422B&logo=pypi&logoColor=white" alt="PyPI"/></a>
   <a href="https://docs.rs/segovia"><img src="https://img.shields.io/docsrs/segovia?style=flat-square&color=CE422B" alt="docs.rs"/></a>
-  <a href="#license"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-CE422B?style=flat-square" alt="License: MIT OR Apache-2.0"/></a>
+  <a href="#license"><img src="https://img.shields.io/badge/license-AGPL--3.0-CE422B?style=flat-square" alt="License: AGPL-3.0-or-later"/></a>
   <a href="#status"><img src="https://img.shields.io/badge/status-pre--release%20(pre--MVP)-CE422B?style=flat-square" alt="Status: pre-release"/></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-CE422B?style=flat-square" alt="PRs welcome"/></a>
 </p>
@@ -163,9 +163,13 @@ If you use Segovia in your research, please cite it via [`CITATION.cff`](CITATIO
 
 ## License
 
-Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT)
-at your option.
+Segovia is licensed under the **GNU Affero General Public License v3.0 or later**
+([AGPL-3.0-or-later](LICENSE)).
 
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the
-work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any
-additional terms or conditions.
+This is deliberate: Segovia is free for everyone — researchers, individuals, and non-profits — and the
+copyleft terms keep it that way. Anyone who distributes Segovia, or runs a modified version as a
+network service, must release their complete corresponding source under the same license, so the
+project cannot be taken closed-source or proprietary.
+
+Unless you explicitly state otherwise, any contribution you submit for inclusion is licensed under
+AGPL-3.0-or-later, without any additional terms or conditions.
