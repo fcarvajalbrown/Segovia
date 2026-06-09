@@ -40,11 +40,11 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/fcarvajalbrown/segovia"
-Repository = "https://github.com/fcarvajalbrown/segovia"
-Documentation = "https://github.com/fcarvajalbrown/segovia"
-Changelog = "https://github.com/fcarvajalbrown/segovia/blob/main/CHANGELOG.md"
-Issues = "https://github.com/fcarvajalbrown/segovia/issues"
+Homepage = "https://github.com/fcarvajalbrown/Segovia"
+Repository = "https://github.com/fcarvajalbrown/Segovia"
+Documentation = "https://github.com/fcarvajalbrown/Segovia"
+Changelog = "https://github.com/fcarvajalbrown/Segovia/blob/main/CHANGELOG.md"
+Issues = "https://github.com/fcarvajalbrown/Segovia/issues"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]

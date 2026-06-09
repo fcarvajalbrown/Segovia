@@ -10,4 +10,4 @@ All notable changes to this project are documented here. The format is based on
 - Initial repository scaffold: Rust crate + PyO3/maturin Python packaging, architecture docs,
   dual MIT/Apache-2.0 license, CI, and contributor/community files.
 
-[Unreleased]: https://github.com/fcarvajalbrown/segovia/commits/main
+[Unreleased]: https://github.com/fcarvajalbrown/Segovia/commits/main
