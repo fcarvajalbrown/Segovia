@@ -12,8 +12,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify-version:
+    name: verify tag matches Cargo.toml version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert git tag equals crate version
+        run: |
+          crate_version=$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
+          tag="${GITHUB_REF_NAME}"
+          echo "tag=$tag crate_version=$crate_version"
+          if [ "$tag" != "v$crate_version" ]; then
+            echo "::error::release tag '$tag' does not match Cargo.toml version 'v$crate_version'"
+            exit 1
+          fi
+
   publish-crate:
     name: publish crate (crates.io)
+    needs: verify-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +41,7 @@ jobs:
 
   build-wheels:
     name: build wheels (${{ matrix.os }})
+    needs: verify-version
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -48,6 +65,7 @@ jobs:
 
   build-sdist:
     name: build sdist
+    needs: verify-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
