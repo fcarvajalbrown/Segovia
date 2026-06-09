@@ -207,3 +207,9 @@ Read these before substantive work:
 - `docs/architecture/roadmap.md` — 12-month milestones and the benchmark go/no-go gate.
 - `docs/architecture/rust-neuro-research.md` — the fact-checked research dossier this project is founded on.
 - `docs/future/leukemia-direction.md` — the deferred, gated single-cell vertical and its deep-research verdict.
+
+**Record new decisions as ADRs.** When a change makes a significant or hard-to-reverse architectural
+decision — a new dependency with lock-in, an I/O or data contract, the packaging/release model, the
+concurrency model — add a new numbered ADR under `docs/architecture/adr/` (next number, existing
+Context / Decision / Consequences format) **as part of that change**. Reversible or
+implementation-level choices do not need one. (Latest: ADR 0010.)
