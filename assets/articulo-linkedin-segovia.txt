@@ -1,0 +1,53 @@
+Por qué voy a pasar un año construyendo un motor de Rust para datos del cerebro
+
+
+Un laboratorio de neurociencia puede grabar un cerebro más rápido de lo que su software puede leerlo.
+
+Una sola sonda de alta densidad escribe unos 80 GB por hora. Las tuberías estándar en Python cargan eso en memoria al doble del tamaño necesario y luego lo copian entero para cada proceso de trabajo. Hay gente que choca contra errores de memoria de 100 GB filtrando apenas unos minutos de señal. Los datos están bien. La cañería gotea.
+
+
+Qué voy a construir
+
+Voy a dedicar el próximo año a arreglar la cañería. Se llama Segovia — por el Acueducto de Segovia: una corriente continua que cruza una larga hilera de arcos de piedra, igual que estos datos fluyen tramo a tramo, por trozos, a través del motor.
+
+Es un motor escrito en Rust para electrofisiología. Lee grabaciones de Neuropixels por trozos, las filtra y las limpia en memoria acotada, y devuelve el resultado a Python sin sacar al investigador de las herramientas que ya usa: SpikeInterface, NWB, Zarr, SpikeGLX.
+
+
+Qué no es
+
+No es un algoritmo nuevo. No usa GPU: el cuello de botella es mover bytes, no calcularlos, y una GPU pasaría más tiempo esperando en el bus PCIe que trabajando. No reemplaza nada. Es un suelo más rápido bajo lo que ya existe. Su ventaja es concreta y poco glamurosa: hilos de memoria compartida en Rust, sin el peaje de copiar toda la memoria por cada proceso que Python arrastra consigo.
+
+
+La única prueba honesta
+
+Puede que no funcione. Hay un solo test que importa: procesar una grabación real de una hora en menos de dos gigabytes de memoria, más rápido que las herramientas actuales, en las máquinas que la gente de verdad tiene encima de la mesa. Si no supera eso, la idea está mal — y lo diré. Es lo primero que voy a construir, no lo último.
+
+
+Porqué
+
+Un amigo que quiero con todo mi corazón, falleció de leucemia. El proyecto lleva su apellido: Segovia.
+
+No voy a fingir que un motor de electrofisiología cura el cáncer. No lo hace, y decir lo contrario sería deshonesto. Pero el problema de fondo es el mismo en los dos mundos: datos enormes que no caben en memoria, y un Python que los copia hasta ahogarse. La genómica de célula única —la que sí estudia cómo evoluciona una leucemia— choca contra exactamente ese muro.
+
+Por eso construyo el núcleo de Segovia neutral respecto al dominio: hoy resuelve electrofisiología, pero la misma maquinaria —leer por trozos, memoria acotada, hilos de verdad— deja abierta una vía honesta hacia esos otros datos, sin reconstruir nada. Ayudar, no prometer de más. Es la forma que encontré de que su nombre siga construyendo algo.
+
+Código abierto. Gratis. Un año, empezando ahora.
+
+Segovia. A ver qué pasa.
+
+#Rust #Neurociencia #CodigoAbierto #Neurotech #Python
+
+
+----------------------------------------------------------------------
+Para los campos aparte de LinkedIn (no van en el cuerpo):
+
+SEO title (≤60 car.):
+Rust para neurociencia: el motor de código abierto Segovia
+
+SEO description (~150 car.):
+Segovia: motor de código abierto en Rust para electrofisiología. Procesa grabaciones de Neuropixels por trozos, en memoria acotada, desde Python.
+
+Cuándo publicar: martes o miércoles, 9–11h (hora local de tu audiencia).
+Imagen de portada: assets/segovia-cover.png
+
+TAG: Rust Foundation Instituto de Neurociencia Biomédica, BNI Centro Interdisciplinario de Neurociencia de Valparaiso Python Chile JavaScript Chile 

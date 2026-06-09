@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#161b2e"/>
+    </linearGradient>
+    <linearGradient id="rust" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#dea584"/>
+      <stop offset="1" stop-color="#ce422b"/>
+    </linearGradient>
+    <radialGradient id="pulse" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd9a0"/>
+      <stop offset="1" stop-color="#ce422b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+
+  <!-- conduit: warm spans separated by gaps (aqueduct arches) -->
+  <g stroke="url(#rust)" stroke-width="26" stroke-linecap="round">
+    <line x1="90" y1="540" x2="290" y2="540"/>
+    <line x1="335" y1="540" x2="535" y2="540"/>
+    <line x1="580" y1="540" x2="780" y2="540"/>
+    <line x1="825" y1="540" x2="990" y2="540"/>
+  </g>
+  <g fill="#5a6b8c">
+    <circle cx="312" cy="540" r="7"/>
+    <circle cx="557" cy="540" r="7"/>
+    <circle cx="802" cy="540" r="7"/>
+  </g>
+  <!-- signal pulse travelling across a gap -->
+  <circle cx="557" cy="540" r="75" fill="url(#pulse)"/>
+  <circle cx="557" cy="540" r="15" fill="#ffe7c2"/>
+
+  <text x="90" y="380" fill="#f5f7fa" font-size="150" font-weight="700" letter-spacing="2">Segovia</text>
+  <text x="94" y="730" fill="#dea584" font-size="42" font-weight="600">A Rust engine for neural data</text>
+  <text x="94" y="790" fill="#8b97b0" font-size="32">Chunked · bounded memory · open source</text>
+  <text x="94" y="980" fill="#5a6b8c" font-size="24" letter-spacing="3">ELECTROPHYSIOLOGY · PyO3 · SpikeInterface</text>
+</svg>
