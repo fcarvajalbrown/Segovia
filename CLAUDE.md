@@ -66,6 +66,9 @@ that. State what a thing does and what it does not do. No hedging, no inflation.
   last step of any user-visible change. Pure chore/docs/ci/tooling work touches neither.
 - **A release is a deliberate roadmap event, never a side effect of a commit.** Creating a `v*`
   tag is a production action — require my explicit approval before tagging.
+- **Announce releases via Discussions natively:** cut releases with
+  `gh release create <tag> --discussion-category "Announcements"` so GitHub auto-posts the release
+  notes as an Announcements discussion. No standing Action — it rides on the deliberate release step.
 
 ## Automated publishing reminders (LinkedIn + dev.to) — ACTIVE
 

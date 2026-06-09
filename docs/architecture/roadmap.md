@@ -54,6 +54,8 @@ Python incumbent on the operations that matter?* Do not build the full engine be
 - Publish the crate (crates.io) + PyPI wheels (Windows/Linux/macOS, cp38–cp313).
 - Write the launch artifact: a benchmark post reproducing the **26.2 GiB / 102 GiB** documented
   failures now running in bounded memory (SC3).
+- Cut releases with `gh release create <tag> --discussion-category "Announcements"` so each release
+  auto-posts to GitHub Discussions (native; no custom Action).
 - **Deliverable:** v0.x public release; reproducible benchmarks; SpikeInterface integration demo.
 
 ## M12+ · Future vertical — single-cell / leukemia (GATED · post-ship · NOT in the 12-month scope)
