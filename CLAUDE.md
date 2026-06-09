@@ -108,6 +108,25 @@ release is one command** — `cargo release <minor|patch> --execute` — and not
   "Announcements"`) fires `release.yml` → `verify-version` → `cargo publish` (via the
   `CARGO_REGISTRY_TOKEN` secret) + maturin wheels/sdist → PyPI via Trusted Publishing (OIDC, the
   `pypi` environment; no token stored). `cargo-release` itself does **not** publish (`publish = false`).
+- **Release-notes prose — always use this Milestone template** for the GitHub release body (the
+  `--notes` passed to `gh release create`):
+
+  ```
+  Segovia v<X.Y.Z> — <one-line milestone headline>.
+
+  ### Highlights
+  - <user-facing capability + the public API symbol; note if `pip install`/the crate is affected>
+
+  ### Validation
+  - <real-data / benchmark evidence; test counts; wheel/abi3 facts>
+
+  ### Still open
+  - <honestly, what this release does NOT yet do>
+
+  **Full Changelog**: v<prev>...v<X.Y.Z>
+  ```
+
+  Keep it honest (the *Still open* section is mandatory — never imply more is done than is).
 - **Setup state — DONE and proven on v0.1.0 (2026-06-09):** `release.yml`, `release.toml`, the
   `dynamic` pyproject switch, the `CARGO_REGISTRY_TOKEN` secret, the `pypi` environment, and PyPI
   Trusted Publishing are all live — v0.1.0 shipped to **both** crates.io and PyPI from one tag. The
