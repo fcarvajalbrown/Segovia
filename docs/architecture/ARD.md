@@ -135,6 +135,16 @@ Resolved with the maintainer:
   on `anndata-rs` (not a SingleRust dependency) if ever pursued. See `adr/0008` and
   `docs/future/leukemia-direction.md`. Build no second vertical now.
 
+- **Licensing & integration — RESOLVED.** Segovia is **AGPL-3.0-or-later** (free for everyone,
+  copyleft, patent-protective; chosen to prevent proprietary capture). Integration is two-tier:
+  **(A) integrate at arm's length** — Segovia as a separate process / via standard formats (Zarr/NWB)
+  / an optional, *user-installed* SpikeInterface-compatible backend, so callers are "mere aggregation"
+  and **not** AGPL-derivative works (SpikeInterface stays MIT; it simply cannot *bundle* Segovia as a
+  hard dependency). **(B) if even optional-backend adoption is rejected**, grow the engine into a full
+  **own-stack AGPL alternative** — earned after the SC1 benchmark, never pre-committed. No reliance on
+  "gray-area" tight-linking workarounds; the legitimate version of that instinct *is* (A). Not legal
+  advice — confirm any boundary you rely on with counsel.
+
 Still open (resolve before the relevant milestone):
 
 - **OD3.** Lazy graph design: eager-chunked iterator **vs** a true deferred operation graph —
