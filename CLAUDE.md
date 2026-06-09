@@ -39,6 +39,9 @@ that. State what a thing does and what it does not do. No hedging, no inflation.
 - On Windows (PowerShell): run each command separately, **no `&&`** chaining.
 - `maturin develop --release` recompiles Rust + installs the editable Python package. **Re-run it
   after any Rust change** before running Python or tests.
+- The Rust↔Python bridge is **`pyo3` 0.28**; the scaffold compiles clean (`cargo check`). No Polars
+  dependency, so the MaskOps `pyo3`/`pyo3-polars` coupling lesson does not apply — but still never
+  bump `pyo3` blindly.
 - Known CI realities to watch (precedent from my MaskOps project): Windows wheel building +
   HDF5 C-library linking is painful; MaskOps had to exclude Ubuntu + Python 3.12 from the test
   matrix over a `dlopen` failure. Expect platform-specific extension-load issues.
@@ -64,15 +67,40 @@ that. State what a thing does and what it does not do. No hedging, no inflation.
 - **A release is a deliberate roadmap event, never a side effect of a commit.** Creating a `v*`
   tag is a production action — require my explicit approval before tagging.
 
-## Automated publishing reminders (set up next session)
+## Automated publishing reminders (LinkedIn + dev.to) — ACTIVE
 
-TODO for the next session: configure a **Stop hook in `.claude/settings.json`** that fires a
-**periodic LinkedIn publishing reminder** (e.g. every 21 days, only printing if the interval has
-elapsed) — covering **both this project (Segovia) and MaskOps**. Mirror the proven pattern from
-MaskOps (`tools/social/devto_reminder.py` + the Stop hook that fires every 21 days). The reminder
-should nudge a milestone-only post (benchmark results, releases, tutorials) — not every commit —
-and respect a cooldown. Draft copy lives in `assets/draft_linkedin_es.md`. Use the `update-config`
-skill to write the hook. Confirm cadence and channels with the user before enabling.
+A **Stop hook** is wired in `.claude/settings.json` running `.claude/hooks/publishing_reminder.py`.
+It surfaces a milestone-publishing reminder at most once every **7 days** (cooldown tracked in
+`.claude/state/publishing_reminder.json`, gitignored) via the hook's `systemMessage` output. The
+reminder covers **both Segovia and MaskOps** and nudges:
+
+- **LinkedIn** — adapt the Spanish draft/teaser in `assets/draft_linkedin_es.*`; best **Tue/Wed
+  9–11h** local; 3–5 hashtags; "saves" are the strongest signal.
+- **dev.to** — a technical write-up, mirroring the MaskOps dev.to cadence.
+
+Post **milestones only** (benchmark results, releases, tutorials) — never every commit — and keep the
+honest **ephys→leukemia arc** (aided-by, not made-for; never overclaim). To change the cadence, edit
+`CADENCE_DAYS` in the hook; to pause it, remove the `Stop` block from `.claude/settings.json`. Project
+skills (none yet) live under `.claude/skills/`.
+
+## Project state (2026-06-09)
+
+- **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). Scaffolded and **pre-MVP** — no
+  compute logic yet, nothing published to crates.io/PyPI.
+- **Scaffold:** standalone `segovia` crate with `src/` core/ephys module seams, `pyproject.toml` +
+  maturin packaging, **dual MIT OR Apache-2.0** license, `.github/` CI (fmt/clippy/test + maturin wheel
+  matrix) and issue/PR templates, `ROADMAP.md` (version SSoT), `CHANGELOG.md`, `CITATION.cff`,
+  `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, and a project `.venv`.
+- **Single-cell / leukemia vertical — deep-research COMPLETE.** Verdict: the out-of-core capability
+  gap is already closed (BPCells in C++, Scarf in Python), so the vertical survives only as a
+  *differentiation* play via **path E (interop)** built on **`scverse/anndata-rs`** — NOT a SingleRust
+  dependency (SingleRust is in-memory). Deferred and gated to a post-ship **M12+** phase. Full verdict
+  and the BPCells-Python monitor live in `docs/future/leukemia-direction.md`.
+- **GitHub page setup — still TODO** (SEO-first, do when ready): set the About **description**; add
+  **topics** (`rust`, `python`, `pyo3`, `neuroscience`, `electrophysiology`, `neuropixels`,
+  `spike-sorting`, `spikeinterface`, `signal-processing`, `time-series`, `zarr`, `nwb`, `dsp`,
+  `scientific-computing`); upload `assets/segovia-social.png` as the social preview; set the Website
+  field; enable Issues + Discussions.
 
 ## What this is
 
@@ -98,4 +126,5 @@ Read these before substantive work:
 - `docs/architecture/adr/` — Architecture Decision Records (one per significant decision).
 - `docs/architecture/tech-stack.md` — concrete crate choices and their sharp edges.
 - `docs/architecture/roadmap.md` — 12-month milestones and the benchmark go/no-go gate.
-- `rust-neuro-research.md` — the fact-checked research dossier this project is founded on.
+- `docs/architecture/rust-neuro-research.md` — the fact-checked research dossier this project is founded on.
+- `docs/future/leukemia-direction.md` — the deferred, gated single-cell vertical and its deep-research verdict.
