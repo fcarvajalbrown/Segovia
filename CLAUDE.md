@@ -60,15 +60,36 @@ that. State what a thing does and what it does not do. No hedging, no inflation.
 - **Branch only for roadmap work** (a feature/fix listed on the roadmap). Tooling, config, and
   housekeeping go directly to `main`.
 - **PR descriptions in STAR format:** Situation / Task / Action / Result.
-- **`ROADMAP.md` is the single source of truth** for version and scope. Read it before any
-  version or release action.
+- **Version sources of truth — keep them in lockstep.** `Cargo.toml` `version` is the *machine*
+  source of truth: `pyproject.toml` carries no static version (`dynamic = ["version"]`), so `maturin`
+  derives the wheel version from `Cargo.toml`, and the git tag `vX.Y.Z` must equal it (CI fails the
+  publish on mismatch). `ROADMAP.md` is the *human* source of truth for version + scope and must
+  state the same number. Read `ROADMAP.md` before any version or release action.
 - **Finishing a task includes updating `ROADMAP.md` and the changelog** — automatically, as the
   last step of any user-visible change. Pure chore/docs/ci/tooling work touches neither.
-- **A release is a deliberate roadmap event, never a side effect of a commit.** Creating a `v*`
-  tag is a production action — require my explicit approval before tagging.
+- **A release is a deliberate roadmap event, and every approved roadmap PR ships one.** My **"yes"
+  to the PR is the release approval** — no separate tagging approval. After I approve: open the PR
+  with a conventional-commit title (its type drives the SemVer bump); I squash-merge it; then —
+  assuming the squash-merge is done, and after verifying `main` actually contains it — cut the
+  release (`cargo-release` bump + changelog + tag `vX.Y.Z` == `Cargo.toml` version, push tag). The
+  `v*` tag triggers `release.yml`. **Never tag code that is not on `main`.** Pure chore/docs/ci/
+  tooling work never releases.
 - **Announce releases via Discussions natively:** cut releases with
   `gh release create <tag> --discussion-category "Announcements"` so GitHub auto-posts the release
   notes as an Announcements discussion. No standing Action — it rides on the deliberate release step.
+
+### Versioning & release mechanics
+
+- **SemVer, pre-1.0 (`0.MINOR.PATCH`):** `feat` → minor; `fix`/`perf`/`refactor` → patch; a breaking
+  change (`!` / `BREAKING CHANGE`) → minor while `< 1.0`. `chore`/`docs`/`ci`/`style`/`test` alone →
+  no release. The squash-merge's conventional-commit type selects the bump.
+- **Tooling:** `cargo-release` performs the bump + changelog + tag. A `v*`-tag-triggered
+  `release.yml` runs `cargo publish` and builds + uploads PyPI wheels via `PyO3/maturin-action`.
+  `pyproject.toml` uses `dynamic = ["version"]` so the wheel version is always read from `Cargo.toml`.
+- **Not yet wired (blocks a real publish):** `release.yml`, the `cargo-release` config, the `dynamic`
+  pyproject switch, and rotated / Trusted-Publishing credentials are still TODO (see the
+  publishing-automation TODO below). Until they exist, only the GitHub side (tag + release +
+  Announcements discussion) can be done by hand — crates.io/PyPI will not publish automatically.
 
 ## Automated publishing reminders (LinkedIn + dev.to) — ACTIVE
 
