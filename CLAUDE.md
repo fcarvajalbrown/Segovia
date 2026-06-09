@@ -68,12 +68,14 @@ that. State what a thing does and what it does not do. No hedging, no inflation.
 - **Finishing a task includes updating `ROADMAP.md` and the changelog** — automatically, as the
   last step of any user-visible change. Pure chore/docs/ci/tooling work touches neither.
 - **A release is a deliberate roadmap event, and every approved roadmap PR ships one.** My **"yes"
-  to the PR is the release approval** — no separate tagging approval. After I approve: open the PR
-  with a conventional-commit title (its type drives the SemVer bump); I squash-merge it; then —
-  assuming the squash-merge is done, and after verifying `main` actually contains it — cut the
-  release (`cargo-release` bump + changelog + tag `vX.Y.Z` == `Cargo.toml` version, push tag). The
-  `v*` tag triggers `release.yml`. **Never tag code that is not on `main`.** Pure chore/docs/ci/
-  tooling work never releases.
+  to the PR is the release approval** — no separate tagging or merge approval. **PRs and branches are
+  a formality to keep history clean**, so Claude drives them end to end: open the PR with a
+  conventional-commit title (its type drives the SemVer bump) → **wait for all GitHub Actions checks
+  to pass** → **Claude does the squash-merge** (don't wait for me to click merge) → after verifying
+  `main` actually contains the squash commit, cut the release (`cargo release <level> --execute`
+  bumps `Cargo.toml`, rewrites the doc surfaces, tags `vX.Y.Z`, pushes) → `gh release create`. The
+  published release triggers `release.yml`. **Never merge on red CI, and never tag code that is not on
+  `main`.** Pure chore/docs/ci/tooling work never releases.
 - **Announce releases via Discussions natively:** cut releases with
   `gh release create <tag> --discussion-category "Announcements"` so GitHub auto-posts the release
   notes as an Announcements discussion. No standing Action — it rides on the deliberate release step.
