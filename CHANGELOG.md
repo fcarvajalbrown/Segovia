@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-06-09
+
 ### Added
 - Initial repository scaffold: Rust crate + PyO3/maturin Python packaging, architecture docs,
   AGPL-3.0-or-later license, CI, and contributor/community files.
