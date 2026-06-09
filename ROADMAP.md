@@ -6,7 +6,7 @@ is the authoritative summary that release and version decisions are made against
 
 ## Current status
 
-- **Version:** `0.1.0` — pre-implementation. First runnable code landed (day-1 zero-copy NumPy spike).
+- **Version:** `0.1.0` — first functional release: the chunked, memory-bounded SpikeGLX reader, live on crates.io + PyPI (2026-06-09).
 - **Phase:** M0–2 (learn + read + de-risk tooling) — in progress; the day-1 maturin/zero-copy NumPy
   toolchain spike is done, and the **chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader** lands the
   phase deliverable (`segovia.SpikeGlxReader`, streaming `(samples, channels)` `int16` chunks),
