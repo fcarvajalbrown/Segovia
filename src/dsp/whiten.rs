@@ -2,23 +2,24 @@ use nalgebra::{DMatrix, SymmetricEigen};
 use numpy::ndarray::{Array1, Array2, Axis};
 
 pub struct Whitener {
-    w: Array2<f64>,
-    mean: Option<Array1<f64>>,
+    w: Array2<f32>,
+    mean: Option<Array1<f32>>,
 }
 
 impl Whitener {
-    pub fn estimate(calib: &Array2<f64>, eps: f64, apply_mean: bool) -> Self {
+    pub fn estimate(calib: &Array2<f32>, eps: f64, apply_mean: bool) -> Self {
         let n = calib.nrows();
         let c = calib.ncols();
 
-        let mean = if apply_mean {
-            Some(calib.mean_axis(Axis(0)).expect("non-empty calibration"))
+        let calib64 = calib.mapv(|v| v as f64);
+        let mean64 = if apply_mean {
+            Some(calib64.mean_axis(Axis(0)).expect("non-empty calibration"))
         } else {
             None
         };
 
-        let mut centered = calib.to_owned();
-        if let Some(m) = &mean {
+        let mut centered = calib64.clone();
+        if let Some(m) = &mean64 {
             for mut row in centered.rows_mut() {
                 row -= m;
             }
@@ -43,17 +44,18 @@ impl Whitener {
         }
         let w_dm = vecs * d * vecs.transpose();
 
-        let mut w = Array2::<f64>::zeros((c, c));
+        let mut w = Array2::<f32>::zeros((c, c));
         for i in 0..c {
             for j in 0..c {
-                w[[i, j]] = w_dm[(i, j)];
+                w[[i, j]] = w_dm[(i, j)] as f32;
             }
         }
+        let mean = mean64.map(|m| m.mapv(|v| v as f32));
 
         Self { w, mean }
     }
 
-    pub fn apply(&self, chunk: &Array2<f64>) -> Array2<f64> {
+    pub fn apply(&self, chunk: &Array2<f32>) -> Array2<f32> {
         match &self.mean {
             Some(m) => {
                 let mut centered = chunk.to_owned();
@@ -76,7 +78,7 @@ mod tests {
     fn whitened_data_has_identity_covariance() {
         let n = 4000;
         let c = 3;
-        let mut data = Array2::<f64>::zeros((n, c));
+        let mut data = Array2::<f32>::zeros((n, c));
         let mut s: u64 = 1;
         let mut rng = || {
             s = s
@@ -88,13 +90,13 @@ mod tests {
             let a = rng();
             let b = rng();
             let d = rng();
-            data[[i, 0]] = 2.0 * a;
-            data[[i, 1]] = a + 0.5 * b;
-            data[[i, 2]] = a - b + 0.3 * d;
+            data[[i, 0]] = (2.0 * a) as f32;
+            data[[i, 1]] = (a + 0.5 * b) as f32;
+            data[[i, 2]] = (a - b + 0.3 * d) as f32;
         }
 
         let w = Whitener::estimate(&data, 0.0, true);
-        let out = w.apply(&data);
+        let out = w.apply(&data).mapv(|v| v as f64);
 
         let mean = out.mean_axis(Axis(0)).unwrap();
         let mut centered = out.clone();
@@ -106,7 +108,7 @@ mod tests {
             for j in 0..c {
                 let expected = if i == j { 1.0 } else { 0.0 };
                 assert!(
-                    (cov[[i, j]] - expected).abs() < 1e-6,
+                    (cov[[i, j]] - expected).abs() < 1e-4,
                     "cov[{i},{j}] = {} expected {expected}",
                     cov[[i, j]]
                 );
