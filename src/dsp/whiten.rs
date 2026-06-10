@@ -56,16 +56,47 @@ impl Whitener {
     }
 
     pub fn apply(&self, chunk: &Array2<f32>) -> Array2<f32> {
-        match &self.mean {
-            Some(m) => {
-                let mut centered = chunk.to_owned();
-                for mut row in centered.rows_mut() {
-                    row -= m;
-                }
-                centered.dot(&self.w)
+        let s = chunk.nrows();
+        let c = chunk.ncols();
+
+        let mut centered = chunk.to_owned();
+        if let Some(m) = &self.mean {
+            for mut row in centered.rows_mut() {
+                row -= m;
             }
-            None => chunk.dot(&self.w),
         }
+
+        let mut out = Array2::<f32>::zeros((s, c));
+        let lhs = centered
+            .as_slice()
+            .expect("centered is row-major contiguous");
+        let rhs = self.w.as_slice().expect("w is row-major contiguous");
+        let dst = out.as_slice_mut().expect("out is row-major contiguous");
+        let cs = c as isize;
+        unsafe {
+            gemm::gemm(
+                s,
+                c,
+                c,
+                dst.as_mut_ptr(),
+                1,
+                cs,
+                false,
+                lhs.as_ptr(),
+                1,
+                cs,
+                rhs.as_ptr(),
+                1,
+                cs,
+                0.0f32,
+                1.0f32,
+                false,
+                false,
+                false,
+                gemm::Parallelism::None,
+            );
+        }
+        out
     }
 }
 

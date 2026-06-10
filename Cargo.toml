@@ -29,6 +29,7 @@ serde_json = "1"
 zarrs = { version = "0.23", default-features = false, features = ["filesystem", "gzip", "zstd", "blosc"] }
 rayon = "1"
 nalgebra = "0.33"
+gemm = "0.18"
 
 [dev-dependencies]
 tempfile = "3"
