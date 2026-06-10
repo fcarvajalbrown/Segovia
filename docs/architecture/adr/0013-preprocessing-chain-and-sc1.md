@@ -1,9 +1,8 @@
 # ADR 0013 — MVP preprocessing chain (bandpass → CMR → whiten) and the SC1 gate
 
-**Status:** Chain implemented and accepted (Candidate D). **SC1 measured — speed criterion NOT met;
-the gate-resolution decision is deferred** (see *SC1 result* below). The chain is on branch
-`feat/sc1-preprocess-chain`, not merged; ROADMAP/CHANGELOG are not yet updated and no release has
-been cut pending that decision.
+**Status:** Accepted (Candidate D), shipped in v0.4.0. **SC1 resolved: the memory criterion passes
+decisively; the speed criterion is not achievable on this workload and is dropped — the project's
+differentiation is reframed to bounded-memory streaming** (see *SC1 result* below).
 
 ## Context
 
@@ -106,10 +105,14 @@ benchmark and directly attacks the "differentiation collapse" risk before any he
   | spikeinterface (thread) | 171.1 s | 81.0 MB/s | 1.75 GB |
   | spikeinterface (process) | 230.0 s | 60.3 MB/s | 2.84 GB |
 
-  **Verdict — SC1 NOT cleanly passed; resolution deferred.** Memory is a **decisive pass** (0.99 GB,
-  file-size-independent; SI-process *breaches* the 2 GB bound at 2.84 GB and OOMs at n_jobs = 8 on
-  this machine). **Speed fails the "clearly faster" bar**: Segovia is **0.84×** SpikeInterface's
-  thread pool (~18 % slower) and only 1.06× its process pool.
+  **Verdict — memory criterion passes decisively; speed criterion dropped.** Memory is a **decisive
+  pass** (0.99 GB, file-size-independent; SI-process *breaches* the 2 GB bound at 2.84 GB and OOMs at
+  n_jobs = 8 on this machine). **Speed does not clear the "clearly faster" bar** and, after a
+  dedicated optimisation round (below), is judged **not achievable on this workload**: Segovia is
+  **0.84×** SpikeInterface's thread pool (~18 % slower) and only 1.06× its process pool. SC1 is
+  therefore resolved as a **memory gate**, and the project's stated differentiation is reframed from
+  "faster than SpikeInterface" to **bounded-memory streaming** (the genuine, file-size-independent
+  win). v0.4.0 ships on that basis.
 
 - **Why speed did not clear the bar — and what the synthetic run hid.** A first synthetic 20 s run
   showed Segovia 1.5–2.4× faster; that was an **artifact of a too-short benchmark** (SI's fixed
@@ -125,10 +128,24 @@ benchmark and directly attacks the "differentiation collapse" risk before any he
   pool** and numpy/scipy release the GIL, so SI already has shared-memory parallelism with faster
   C/MKL kernels.
 
-- **Open resolution (next session):** (1) one more targeted round — parallel decompression + fewer
-  allocations + f32 filter — the best remaining speed lever; (2) reframe SC1 around the proven
-  bounded-memory advantage and ship as a memory-bounded engine; or (3) declare the speed gate a
-  no-go and reconsider scope. The bounded-memory result is genuine and shippable regardless.
+- **The optimisation round that settled it.** The deferred "one more round" was run and profiled
+  before deciding. Profiling the 213 s full chain showed **serial `.cbin` decode is 33 %** of the
+  wall (71 s), so it was parallelised: each mtscomp native chunk is independently decodable (the
+  per-channel time-delta accumulator resets at every native-chunk boundary), and they were inflated +
+  reconstructed in a `rayon` burst instead of one-at-a-time on the main thread. The result was
+  **no net full-chain gain** (211 s vs 202 s, within noise) at **+150 MB** memory, so it was
+  reverted. The reason is structural, confirmed by a pure-Rust micro-benchmark: decode scales only
+  **1.66× across 16 cores** — it is **memory-bandwidth bound** (zlib inflate + the Fortran-order
+  transpose stream through RAM faster than cores can be fed), a ceiling that constrains SpikeInterface
+  equally. The remaining theoretical lever — overlapping decode with compute the way SI's workers
+  already do — has an honest ceiling of roughly *matching* SI's wall, not clearly beating it, on a
+  workload where SI also uses faster C/MKL kernels. The premise that shared-memory threading would
+  beat SI's parallelism does not hold against SI 0.102's default *thread* pool.
+
+- **Resolution taken:** reframe SC1 as the bounded-memory gate it decisively passes and ship v0.4.0
+  as a memory-bounded streaming engine; the "faster than SpikeInterface" claim is dropped. The
+  bounded-memory result is genuine, file-size-independent, and shippable; the speed finding is
+  recorded honestly here rather than chased further.
 
 - **Candidate D only.** No lazy graph, op fusion, or optimizer is built; multi-op chains re-traverse
   data and cross-chunk filter state is handled per-op via the margin. Growing into Candidate A (a
