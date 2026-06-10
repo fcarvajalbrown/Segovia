@@ -20,7 +20,13 @@ pub struct ChainParams {
 
 type ChunkStream = Box<dyn Iterator<Item = Array2<i16>> + Send + Sync>;
 
-fn filter_to_f32(slab: &Array2<f32>, valid_start: usize, valid_len: usize, sos: &[Section], padlen: usize) -> Array2<f32> {
+fn filter_to_f32(
+    slab: &Array2<f32>,
+    valid_start: usize,
+    valid_len: usize,
+    sos: &[Section],
+    padlen: usize,
+) -> Array2<f32> {
     let n = slab.nrows();
     let c = slab.ncols();
     let pad = padlen.min(n.saturating_sub(1));
