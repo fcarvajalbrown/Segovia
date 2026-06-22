@@ -152,6 +152,15 @@ skills (none yet) live under `.claude/skills/`.
 
 ## Project state (2026-06-09)
 
+> **START HERE NEXT SESSION (2026-06-22): unresolved gating question.** The "BPCells of
+> electrophysiology" re-angle was deep-researched and **rejected** (SI's OOMs are config errors not
+> architectural gaps; ephys is preprocessed once not revisited like single-cell matrices; not
+> CZI-fundable at v0.1.0/solo). The one decisive question left is **whether the binding bottleneck has
+> moved to GPU spike sorting (Kilosort4), which would kill any CPU-preprocessing angle regardless of
+> language.** A focused deep-research (`wf_bd0ea473-f2e`) was launched to settle it and then **stopped
+> before completion — it is UNANSWERED.** Resolve this before pursuing ANY preprocessing direction.
+> Full context in the auto-memory: `gpu-bottleneck-gating-question` and `segovia-no-competitive-moat`.
+
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **v0.1.0 released 2026-06-09** — the
   first functional release: the chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader
   (`segovia.SpikeGlxReader`), merged via PR #3. Published to **both crates.io and PyPI** at v0.1.0
