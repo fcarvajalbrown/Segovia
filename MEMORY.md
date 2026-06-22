@@ -1,6 +1,42 @@
-# Segovia — session handoff (paused 2026-06-10)
+# Segovia — session handoff (updated 2026-06-22)
 
 Pick-up notes for the next session. Nothing irreversible was done: `main` is clean, no merge, no tag, no release.
+
+## Update 2026-06-22 — preprocessing premise settled NEGATIVE; pivoting to repurpose
+
+The "open decision" below (pursue the heavy-op memory win vs ship honestly) is now overtaken by a
+deeper finding. The gating question — *has the binding bottleneck moved to GPU spike sorting,
+making any CPU preprocessing engine optimize a non-binding step?* — was deep-researched and
+**resolved YES**. Verdict saved at `docs/research/2026-06-22-gpu-bottleneck-gating-verdict.md`:
+
+- The binding constraints (GPU compute + the host-RAM memory wall) live in **spike sorting
+  (Kilosort4)**, not in preprocessing. Kilosort4 is fundamentally GPU-dependent (CPU backend
+  testing-only), needs >=12 GB VRAM, and its length-scaling memory wall is host RAM *inside the
+  sorter's clustering*. Field standardized on SpikeInterface + Kilosort; Allen deprecated standalone
+  ecephys. **Every "preprocessing still binds" niche claim was refuted.**
+- Honesty caveat: the exact time-budget magnitudes did NOT survive verification — "preprocessing is
+  a rounding error" is directionally supported but not quantified. Don't cite a fraction as fact.
+
+This closes off ALL preprocessing-centric directions (incl. the BPCells-of-ephys re-angle, already
+rejected 2026-06-22 — see `docs/research/2026-06-22-bpcells-of-ephys-niche-verdict.md`).
+
+**Decision:** repurpose Segovia's transferable core (Rust+PyO3, AGPL, bounded-memory chunked
+streaming with GIL-released threading) to a new domain. A scoped deep-research was launched then
+**stopped to conserve tokens** — RELAUNCH it next time. Decided scope:
+- Domains: (A) single-cell genomics / the leukemia arc, AND (B) neuroscience-adjacent signals
+  (calcium imaging, EEG/MEG, widefield) — NOT electrophysiology.
+- Bar: a genuinely binding, DOCUMENTED, RECURRING out-of-core / streaming-IO pain with NO mature
+  incumbent (BPCells/Scarf/anndata-on-disk/TileDB-SOMA/Dask/Zarr already-served => fails unless a
+  specific unmet sub-niche is evidenced).
+- Constraints: solo-maintainable, Rust+PyO3, AGPL, value is bounded-memory streaming (NOT GPU, NOT a
+  rival framework — must be an adopted component/backend).
+- Leads to test: scverse/anndata-rs interop / Rust on-disk AnnData backend / streaming format
+  conversion (h5ad/zarr/10x); whether suite2p/CaImAn mmap, MNE preload=False, Zarr/Dask loaders
+  already close the neuro-signal gap.
+
+Everything below is the 2026-06-10 handoff, kept for history.
+
+---
 
 ## Where we are
 
