@@ -222,3 +222,9 @@ decision — a new dependency with lock-in, an I/O or data contract, the packagi
 concurrency model — add a new numbered ADR under `docs/architecture/adr/` (next number, existing
 Context / Decision / Consequences format) **as part of that change**. Reversible or
 implementation-level choices do not need one. (Latest: ADR 0010.)
+
+**Save every deep-research report to `docs/research/`.** Whenever a deep-research run completes, its
+report MUST be written as a dated markdown file (`docs/research/YYYY-MM-DD-<slug>.md`) and committed —
+never left only in the workflow temp output or a chat summary. `docs/research/` is the durable home
+for the project's research dossiers. Transcribe only verified findings (verdict, evidence, sources,
+refuted claims, caveats, open questions); no invented facts.
