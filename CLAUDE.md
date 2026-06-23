@@ -152,7 +152,18 @@ skills (none yet) live under `.claude/skills/`.
 
 ## Project state (2026-06-23)
 
-> **START HERE NEXT SESSION (2026-06-23): direction decided — ship a publishable paper, not a product.**
+> **NEXT AGENT — START HERE (handoff 2026-06-23):** The simulator (ADR 0015) and the
+> replay-at-acquisition-rate harness are DONE and committed on branch `feat/sc1-preprocess-chain`
+> (pushed). First results are in `docs/research/2026-06-23-replay-latency-sweep.md` (headline: 100%
+> real-time deadline-adherence at 300 ms+ budgets, bounded sub-0.5 GB file-size-independent memory, on
+> synthetic AND real IBL; 100 ms budget drops to 79.1% on real `.cbin` due to memory-bandwidth-bound zlib
+> decode). **Your first action: present the four NEXT-CONCRETE-STEP options (below) to Felipe via the
+> AskUserQuestion blue picker and proceed with his choice — do NOT pick one yourself.** Honor the
+> standing rules: every decision via the blue picker (one "(Recommended)" first, state the WHY); never
+> assume; save durable context to CLAUDE.md + ADRs (NOT the memory system); commit only when asked; no AI
+> attribution anywhere. Full session detail in the blockquote and project-state below.
+>
+> **DIRECTION (unchanged): ship a publishable paper, not a product.**
 > All product-moat angles are exhausted (SC1 ties SI on speed / wins on memory — ADR 0013; the binding
 > bottleneck is GPU spike sorting not CPU preprocessing — RESOLVED 2026-06-22, YES; both repurpose
 > pivots NO-GO — 2026-06-23). The reframe that unblocks everything: **a CS paper needs novelty + rigor,
