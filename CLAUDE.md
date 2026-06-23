@@ -187,11 +187,23 @@ skills (none yet) live under `.claude/skills/`.
 > strengthener: a software closed-loop trigger demo (detect → emit trigger, measure detection-to-action
 > latency); not required.
 >
-> **NEXT CONCRETE STEP:** build (a) the built-in streaming bounded-memory simulator (ephys MEArec-style
-> + IFC bipolar-Gaussian/Poisson) and (b) the replay-at-acquisition-rate benchmark harness. Target
-> venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF 2.5; SoftwareX is lighter).
-> **Full rationale: ADR 0014** (`docs/architecture/adr/0014-success-criterion-publishable-systems-paper.md`).
-> Durable context lives in `CLAUDE.md` + ADRs, NOT the memory system.
+> **SIMULATOR — DONE (2026-06-23, ADR 0015): ephys leg shipped.** `segovia.SyntheticEphysReader` is a
+> built-in `ChunkSource` (drops straight into `preprocess(...)`): biophysically-grounded parametric
+> spikes — extracellular point-source spatial decay `V(r)=A·d_perp/r`, Ricker/Mexican-hat triphasic
+> temporal shape, per-unit Poisson firing, additive Gaussian noise, `i16` output. Pure-Rust
+> dependency-free SplitMix64+xoshiro256++ RNG → bit-identical across platforms; output is
+> **chunk-size-independent** and bounded-memory; `ground_truth()` returns `(sample, unit, peak_channel)`
+> for MEArec-style `get_performance`. Fidelity decision (chosen: grounded-parametric, NOT NEURON/LFPy
+> which breaks the streaming premise, NOT MEArec HDF5 banks which add C-linking) + full design = ADR 0015.
+> Tested: `src/sim/ephys.rs` unit tests + `tests/test_simulator.py` (10), all green. **IFC leg
+> (`sim/ifc`) NOT built yet** (YAGNI).
+>
+> **NEXT CONCRETE STEP:** build the **replay-at-acquisition-rate benchmark harness** (per the EVAL METHOD
+> above) consuming `SyntheticEphysReader` + the retained real IBL run — measure per-chunk latency
+> (p95/p99), jitter, throughput, peak RSS, deadline-adherence. Then (later) the IFC simulator leg and the
+> paper draft. Target venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF 2.5;
+> SoftwareX is lighter). **Full rationale: ADR 0014 + ADR 0015.** Durable context lives in `CLAUDE.md` +
+> ADRs, NOT the memory system.
 
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **v0.1.0 released 2026-06-09** — the
   first functional release: the chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader
@@ -253,7 +265,7 @@ Read these before substantive work:
 decision — a new dependency with lock-in, an I/O or data contract, the packaging/release model, the
 concurrency model — add a new numbered ADR under `docs/architecture/adr/` (next number, existing
 Context / Decision / Consequences format) **as part of that change**. Reversible or
-implementation-level choices do not need one. (Latest: ADR 0010.)
+implementation-level choices do not need one. (Latest: ADR 0015.)
 
 **Save every deep-research report to `docs/research/`.** Whenever a deep-research run completes, its
 report MUST be written as a dated markdown file (`docs/research/YYYY-MM-DD-<slug>.md`) and committed —
