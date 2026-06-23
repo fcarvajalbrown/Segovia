@@ -204,6 +204,14 @@ skills (none yet) live under `.claude/skills/`.
 > paper draft. Target venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF 2.5;
 > SoftwareX is lighter). **Full rationale: ADR 0014 + ADR 0015.** Durable context lives in `CLAUDE.md` +
 > ADRs, NOT the memory system.
+>
+> **GUI — DECIDED (2026-06-23): optional, build AFTER the harness, keep it thin.** No venue we
+> identified requires a GUI (Neuroinformatics/Frontiers/SoftwareX ask for exactness, reproducibility,
+> impact — not a UI; the precedents improv/BRAND/RT-Sort are frameworks, not GUI tools). A *simple* live
+> monitor (matplotlib animation: scrolling multichannel traces + live latency/throughput/RSS readout) is
+> a worthwhile **strengthener** — it yields a paper figure and realises ADR 0014's optional closed-loop
+> demo. It is sequenced **after** the harness because it visualises the harness's metric stream (same
+> dependency logic as simulator→harness). Do NOT let it gate the paper; no heavy GUI framework.
 
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **v0.1.0 released 2026-06-09** — the
   first functional release: the chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader
