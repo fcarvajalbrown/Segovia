@@ -177,11 +177,21 @@ skills (none yet) live under `.claude/skills/`.
 >    data shape/scale not biological truth) AND demonstrates dual-domain generality with zero wet-lab.
 >    Position vs MEArec; claimed novelty = streaming/bounded-memory generation + dual-domain.
 >
-> **NEXT CONCRETE STEP (open question, resolve before building):** does the "near-real-time /
-> closed-loop" framing need a latency-critical demo, or do streaming latency + jitter metrics suffice?
-> Decide, then build the simulator + the streaming benchmark harness. **Full rationale: ADR 0014**
-> (`docs/architecture/adr/0014-success-criterion-publishable-systems-paper.md`). Durable context lives
-> in `CLAUDE.md` + ADRs, NOT the memory system.
+> **EVAL METHOD — RESOLVED (2026-06-23, 20-search sweep): replay-at-acquisition-rate, no hardware.**
+> Stream synthetic + the real IBL recording from disk at the true sampling rate; measure per-chunk
+> end-to-end latency (mean/SD/median/p95/p99/max), jitter, sustained throughput, peak RSS, and
+> deadline-adherence (% chunks meeting the real-time bound), reported with CIs/percentiles (Hoefler
+> SC'15; Rust Criterion for micro-benchmarks). Precedents that publish this with ZERO hardware: improv
+> (*Nat. Commun.* 2025), BRAND (*J. Neural Eng.* 2024), RT-Sort (*PLOS One* 2024). Keep the real IBL
+> run for external validity (synthetic noise stats are imperfect — MEArec caveat). Optional cheap
+> strengthener: a software closed-loop trigger demo (detect → emit trigger, measure detection-to-action
+> latency); not required.
+>
+> **NEXT CONCRETE STEP:** build (a) the built-in streaming bounded-memory simulator (ephys MEArec-style
+> + IFC bipolar-Gaussian/Poisson) and (b) the replay-at-acquisition-rate benchmark harness. Target
+> venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF 2.5; SoftwareX is lighter).
+> **Full rationale: ADR 0014** (`docs/architecture/adr/0014-success-criterion-publishable-systems-paper.md`).
+> Durable context lives in `CLAUDE.md` + ADRs, NOT the memory system.
 
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **v0.1.0 released 2026-06-09** — the
   first functional release: the chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader

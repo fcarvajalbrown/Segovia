@@ -94,6 +94,24 @@ Two grounding facts were verified before this decision:
   The IFC leg is synthetic and conceptual.
 - The arm's-length AGPL benchmarking boundary from ADR 0013 (SpikeInterface in a separate process /
   venv) is kept.
-- **Open question for the evaluation-design step:** whether the "near-real-time / closed-loop" framing
-  requires a latency-critical demonstration beyond throughput and jitter, or whether streaming latency
-  and jitter metrics suffice. Resolve when drafting the evaluation plan, before building the harness.
+- **Evaluation methodology — RESOLVED (2026-06-23, 20-search sweep): replay-at-acquisition-rate, no
+  hardware.** A latency-critical *hardware* demo is **not** required to claim near-real-time /
+  closed-loop. The accepted, top-venue-published method is to **stream prerecorded or synthetic data
+  from disk at the true acquisition rate and measure latency** — precedents: `improv` (*Nature
+  Communications*, 2025; closed-loop benchmarked on a prerecorded calcium set streamed at the original
+  rate, "in silico"), BRAND (*J. Neural Eng.*, 2024; latency/jitter on simulated + streamed data via
+  monotonic-clock input/output timestamps), RT-Sort (*PLOS One*, 2024; ms latency on recorded
+  ground-truth). The evaluation is therefore:
+  - **Metrics:** per-chunk end-to-end latency distribution (mean, SD, median, p95, **p99**, max),
+    jitter, sustained throughput, peak RSS (whole-process-tree, mid-execution max — already ADR 0013's
+    method), and a **deadline-adherence** figure (% of chunks meeting the real-time bound; the standard
+    "≥99% satisfy the bound" framing).
+  - **Statistics:** confidence intervals / percentiles, not bare means (Hoefler & Belli, SC'15).
+    Latency micro-benchmarks via Rust **Criterion** (warm-up, repeated sampling, p95/p99).
+  - **Data:** synthetic streams (from the built-in simulator) for systems metrics + ground-truth
+    correctness (MEArec-style `get_performance` accuracy/precision/recall), **plus the retained real
+    IBL AP-band run for external validity** — because synthetic data does not perfectly reproduce real
+    noise statistics (a documented MEArec caveat), which is stated as a limitation.
+  - **Scope:** no hardware-in-the-loop and no live wet-lab. An optional software closed-loop trigger
+    demo (detect event → emit trigger, measure detection-to-action latency) is a cheap strengthener if
+    needed, but is not required for the core result.
