@@ -27,10 +27,10 @@ struct Prefetch {
 }
 
 impl Prefetch {
-    fn new(mut inner: ChunkStream, depth: usize) -> Self {
+    fn new(inner: ChunkStream, depth: usize) -> Self {
         let (tx, rx) = sync_channel::<Array2<i16>>(depth.max(1));
         std::thread::spawn(move || {
-            while let Some(chunk) = inner.next() {
+            for chunk in inner {
                 if tx.send(chunk).is_err() {
                     break;
                 }
