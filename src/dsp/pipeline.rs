@@ -1,4 +1,6 @@
 use std::collections::VecDeque;
+use std::sync::mpsc::{sync_channel, Receiver};
+use std::sync::Mutex;
 
 use numpy::ndarray::{concatenate, s, Array2, ArrayView2, Axis};
 use rayon::prelude::*;
@@ -19,6 +21,32 @@ pub struct ChainParams {
 }
 
 type ChunkStream = Box<dyn Iterator<Item = Array2<i16>> + Send + Sync>;
+
+struct Prefetch {
+    rx: Mutex<Receiver<Array2<i16>>>,
+}
+
+impl Prefetch {
+    fn new(mut inner: ChunkStream, depth: usize) -> Self {
+        let (tx, rx) = sync_channel::<Array2<i16>>(depth.max(1));
+        std::thread::spawn(move || {
+            while let Some(chunk) = inner.next() {
+                if tx.send(chunk).is_err() {
+                    break;
+                }
+            }
+        });
+        Self { rx: Mutex::new(rx) }
+    }
+}
+
+impl Iterator for Prefetch {
+    type Item = Array2<i16>;
+
+    fn next(&mut self) -> Option<Array2<i16>> {
+        self.rx.get_mut().expect("prefetch mutex").recv().ok()
+    }
+}
 
 fn filter_to_f32(
     slab: &Array2<f32>,
@@ -109,6 +137,9 @@ impl Pipeline {
         } else {
             None
         };
+
+        let depth = (params.batch * 2).max(2);
+        let stream: ChunkStream = Box::new(Prefetch::new(stream, depth));
 
         Self {
             stream,
