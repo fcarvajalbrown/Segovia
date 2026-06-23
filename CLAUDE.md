@@ -198,12 +198,21 @@ skills (none yet) live under `.claude/skills/`.
 > Tested: `src/sim/ephys.rs` unit tests + `tests/test_simulator.py` (10), all green. **IFC leg
 > (`sim/ifc`) NOT built yet** (YAGNI).
 >
-> **NEXT CONCRETE STEP:** build the **replay-at-acquisition-rate benchmark harness** (per the EVAL METHOD
-> above) consuming `SyntheticEphysReader` + the retained real IBL run — measure per-chunk latency
-> (p95/p99), jitter, throughput, peak RSS, deadline-adherence. Then (later) the IFC simulator leg and the
-> paper draft. Target venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF 2.5;
-> SoftwareX is lighter). **Full rationale: ADR 0014 + ADR 0015.** Durable context lives in `CLAUDE.md` +
-> ADRs, NOT the memory system.
+> **HARNESS + FIRST RESULTS — DONE (2026-06-23).** `bench/replay_latency.py` is the
+> replay-at-acquisition-rate harness (per-chunk latency mean/SD/median/p95/p99/max, jitter, throughput,
+> peak RSS, deadline-adherence; reports the zero-phase filter look-ahead separately; `batch=1` = true
+> online). Segovia-only first cut. Ran a 60 s chunk-size sweep (100/300/1000 ms) on the synthetic
+> simulator AND the real IBL AP-band `.cbin`. **Headline result: 100% real-time deadline-adherence at
+> 300 ms+ budgets with bounded sub-0.5 GB, file-size-independent memory on both sources; at the 100 ms
+> budget the real `.cbin` drops to 79.1% due to serial zlib decode (memory-bandwidth-bound per ADR 0013)
+> while compute meets real-time.** Full numbers + caveats: `docs/research/2026-06-23-replay-latency-sweep.md`.
+>
+> **NEXT CONCRETE STEP (choose):** (a) SpikeInterface **online-latency comparison** (separate `.venv-si`,
+> arm's-length per ADR 0013) to contextualise the numbers; (b) the **thin matplotlib live-monitor GUI**
+> (decided: after the harness — now unblocked); (c) the **paper outline/draft**; (d) the **IFC simulator
+> leg** (`sim/ifc`). Target venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF
+> 2.5; SoftwareX is lighter). **Full rationale: ADR 0014 + ADR 0015.** Durable context lives in
+> `CLAUDE.md` + ADRs, NOT the memory system.
 >
 > **GUI — DECIDED (2026-06-23): optional, build AFTER the harness, keep it thin.** No venue we
 > identified requires a GUI (Neuroinformatics/Frontiers/SoftwareX ask for exactness, reproducibility,
