@@ -34,3 +34,4 @@ Thumbs.db
 .env
 
 tests/data/
+bench/_tmp/
