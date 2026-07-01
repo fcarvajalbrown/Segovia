@@ -7,6 +7,16 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- **IFC simulator leg** (`segovia.SyntheticIfcReader`): a second `sim` vertical modelling impedance
+  flow cytometry as **bipolar-Gaussian pulses** (a positive then negative lobe as a particle transits
+  the differential electrodes) from `n_populations` distinct particle populations arriving as a
+  homogeneous Poisson process, with per-channel gains, additive Gaussian noise, and `i16` output. It
+  implements the same `ChunkSource` contract and streams through the unchanged `preprocess(...)` chain,
+  demonstrating the engine's dual-domain generality with no wet-lab dependency. Same pure-Rust
+  dependency-free RNG as the ephys leg, so output is chunk-size-independent, bounded-memory, and
+  bit-identical across platforms; `ground_truth()` returns `(sample, population, amplitude)`. IFC-
+  appropriate defaults (100 kHz, 2 channels, µs-scale pulses). Tested by `src/sim/ifc.rs` unit tests
+  and `tests/test_ifc_simulator.py`. See ADR 0016.
 - Streaming **bandpass → common-median-reference → whiten** preprocessing chain, exposed as
   `reader.preprocess(sos, chunk_samples, margin, calib_samples, ...)` on all three readers and
   yielding `float32 (samples, channels)` chunks with the GIL released per batch (`Preprocessor`

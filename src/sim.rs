@@ -1,4 +1,5 @@
 pub mod ephys;
+pub mod ifc;
 
 pub(crate) struct Rng {
     s: [u64; 4],

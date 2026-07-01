@@ -16,6 +16,7 @@ use ephys::cbin::{CbinChunkIter, CbinError};
 use ephys::reader::{ChunkIter, ReaderError};
 use ephys::zarr::{ZarrChunkIter, ZarrError};
 use sim::ephys::{SimChunkIter, SimConfig, SimError, SyntheticEphysReader};
+use sim::ifc::{IfcChunkIter, IfcConfig, IfcError, SyntheticIfcReader};
 
 type ChunkStream = Box<dyn Iterator<Item = Array2<i16>> + Send + Sync>;
 
@@ -122,6 +123,12 @@ impl From<CbinError> for PyErr {
 
 impl From<SimError> for PyErr {
     fn from(err: SimError) -> PyErr {
+        PyValueError::new_err(err.to_string())
+    }
+}
+
+impl From<IfcError> for PyErr {
+    fn from(err: IfcError) -> PyErr {
         PyValueError::new_err(err.to_string())
     }
 }
@@ -570,6 +577,132 @@ impl PySyntheticEphysChunks {
     }
 }
 
+#[pyclass(name = "SyntheticIfcReader")]
+struct PySyntheticIfcReader {
+    inner: SyntheticIfcReader,
+}
+
+#[pymethods]
+impl PySyntheticIfcReader {
+    #[new]
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (n_channels = 2, duration_s = 1.0, sample_rate = 100000.0, n_populations = 3, event_rate = 100.0, noise_level = 0.01, lsb = 1.0e-4, seed = 0))]
+    fn new(
+        n_channels: usize,
+        duration_s: f64,
+        sample_rate: f64,
+        n_populations: usize,
+        event_rate: f64,
+        noise_level: f64,
+        lsb: f64,
+        seed: u64,
+    ) -> PyResult<Self> {
+        let inner = SyntheticIfcReader::new(IfcConfig {
+            n_channels,
+            duration_s,
+            sample_rate,
+            n_populations,
+            event_rate,
+            noise_level,
+            lsb,
+            seed,
+        })?;
+        Ok(Self { inner })
+    }
+
+    #[getter]
+    fn n_channels(&self) -> usize {
+        self.inner.n_channels()
+    }
+
+    #[getter]
+    fn sample_rate(&self) -> f64 {
+        self.inner.sample_rate()
+    }
+
+    #[getter]
+    fn n_samples(&self) -> usize {
+        self.inner.n_samples()
+    }
+
+    fn ground_truth<'py>(&self, py: Python<'py>) -> GroundTruthArrays<'py> {
+        let (samples, populations, amplitudes) = self.inner.ground_truth();
+        (
+            samples.into_pyarray(py),
+            populations.into_pyarray(py),
+            amplitudes.into_pyarray(py),
+        )
+    }
+
+    #[pyo3(signature = (chunk_samples))]
+    fn chunks(&self, chunk_samples: usize) -> PyResult<PySyntheticIfcChunks> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        Ok(PySyntheticIfcChunks {
+            inner: self.inner.chunks(chunk_samples),
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (sos, chunk_samples, margin, calib_samples, eps = 1e-6, apply_mean = true, batch = 0, whiten = true))]
+    fn preprocess(
+        &self,
+        py: Python<'_>,
+        sos: PyReadonlyArray2<'_, f64>,
+        chunk_samples: usize,
+        margin: usize,
+        calib_samples: usize,
+        eps: f64,
+        apply_mean: bool,
+        batch: usize,
+        whiten: bool,
+    ) -> PyResult<PyPreprocessor> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        let calib: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        let stream: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        build_preprocessor(
+            py,
+            calib,
+            stream,
+            sos,
+            margin,
+            calib_samples,
+            eps,
+            apply_mean,
+            batch,
+            whiten,
+        )
+    }
+}
+
+#[pyclass(name = "SyntheticIfcChunks")]
+struct PySyntheticIfcChunks {
+    inner: IfcChunkIter,
+}
+
+#[pymethods]
+impl PySyntheticIfcChunks {
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__<'py>(
+        mut slf: PyRefMut<'py, Self>,
+        py: Python<'py>,
+    ) -> Option<Bound<'py, PyArray2<i16>>> {
+        let inner = &mut slf.inner;
+        let next = py.detach(|| inner.next());
+        next.map(|array| array.into_pyarray(py))
+    }
+}
+
 #[pymodule]
 fn segovia(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
@@ -582,6 +715,8 @@ fn segovia(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyCbinChunks>()?;
     m.add_class::<PySyntheticEphysReader>()?;
     m.add_class::<PySyntheticEphysChunks>()?;
+    m.add_class::<PySyntheticIfcReader>()?;
+    m.add_class::<PySyntheticIfcChunks>()?;
     m.add_class::<PyPreprocessor>()?;
     Ok(())
 }
