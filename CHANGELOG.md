@@ -6,6 +6,41 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- **IFC simulator leg** (`segovia.SyntheticIfcReader`): a second `sim` vertical modelling impedance
+  flow cytometry as **bipolar-Gaussian pulses** (a positive then negative lobe as a particle transits
+  the differential electrodes) from `n_populations` distinct particle populations arriving as a
+  homogeneous Poisson process, with per-channel gains, additive Gaussian noise, and `i16` output. It
+  implements the same `ChunkSource` contract and streams through the unchanged `preprocess(...)` chain,
+  demonstrating the engine's dual-domain generality with no wet-lab dependency. Same pure-Rust
+  dependency-free RNG as the ephys leg, so output is chunk-size-independent, bounded-memory, and
+  bit-identical across platforms; `ground_truth()` returns `(sample, population, amplitude)`. IFC-
+  appropriate defaults (100 kHz, 2 channels, µs-scale pulses). Tested by `src/sim/ifc.rs` unit tests
+  and `tests/test_ifc_simulator.py`. See ADR 0016.
+- Streaming **bandpass → common-median-reference → whiten** preprocessing chain, exposed as
+  `reader.preprocess(sos, chunk_samples, margin, calib_samples, ...)` on all three readers and
+  yielding `float32 (samples, channels)` chunks with the GIL released per batch (`Preprocessor`
+  iterator). Architecture is **Candidate D**: eager Rayon over time-chunks (the parallel unit is the
+  time chunk, since CMR's per-sample median and whitening's `W·x` both mix all channels). The
+  bandpass is a faithful reimplementation of scipy `sosfiltfilt` (scipy-designed SOS passed in;
+  `sosfilt_zi` steady-state init, odd padding, forward-backward) applied over a real-neighbour
+  **margin overlap**, so chunked output is reference-equal to whole-signal scipy with no cross-chunk
+  boundary artifact; CMR is the per-sample median across channels (numpy-median semantics); whitening
+  is ZCA from a bounded calibration subset (`W = V·diag(1/√(λ+ε))·Vᵀ` via a pure-Rust `nalgebra`
+  symmetric eigendecomposition), applied with the `gemm` crate. CMR and the whitening GEMM compute in
+  `float32`; the filter stays `float64`. Resident memory is `batch × (chunk + 2·margin) × channels`,
+  independent of file size. Validated to the `float32` floor against a whole-signal scipy reference
+  (`tests/test_preprocess.py`). See ADR 0013.
+
+### Changed
+- **SC1 gate resolved as a bounded-memory gate.** On a real 1-hour IBL Neuropixels AP recording the
+  chain holds **0.99 GB peak, file-size-independent** (vs SpikeInterface 1.75 GB thread / 2.84 GB
+  process, which breaches 2 GB and OOMs at `n_jobs = 8`) — a decisive memory win. The speed criterion
+  ("faster than SpikeInterface") was measured (~0.84× SI's thread pool) and, after a profiled
+  optimisation round, judged not achievable on this **memory-bandwidth-bound** workload against SI's
+  default thread pool + C/MKL kernels; it is dropped. Segovia's stated differentiation is now
+  bounded-memory streaming. See ADR 0013 and `ROADMAP.md`.
+
 ## [0.3.0] - 2026-06-09
 
 ### Added

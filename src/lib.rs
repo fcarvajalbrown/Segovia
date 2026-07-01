@@ -1,17 +1,95 @@
 use std::path::PathBuf;
 
 use numpy::ndarray::Array2;
-use numpy::{IntoPyArray, PyArray2};
+use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray2};
 use pyo3::exceptions::{PyIOError, PyValueError};
 use pyo3::prelude::*;
 
 mod core;
+mod dsp;
 mod ephys;
+mod sim;
 
 use core::ChunkSource;
+use dsp::pipeline::{ChainParams, Pipeline};
 use ephys::cbin::{CbinChunkIter, CbinError};
 use ephys::reader::{ChunkIter, ReaderError};
 use ephys::zarr::{ZarrChunkIter, ZarrError};
+use sim::ephys::{SimChunkIter, SimConfig, SimError, SyntheticEphysReader};
+use sim::ifc::{IfcChunkIter, IfcConfig, IfcError, SyntheticIfcReader};
+
+type ChunkStream = Box<dyn Iterator<Item = Array2<i16>> + Send + Sync>;
+
+type GroundTruthArrays<'py> = (
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i32>>,
+    Bound<'py, PyArray1<i32>>,
+);
+
+#[allow(clippy::too_many_arguments)]
+fn build_preprocessor(
+    py: Python<'_>,
+    calib: ChunkStream,
+    stream: ChunkStream,
+    sos: PyReadonlyArray2<'_, f64>,
+    margin: usize,
+    calib_samples: usize,
+    eps: f64,
+    apply_mean: bool,
+    batch: usize,
+    whiten: bool,
+) -> PyResult<PyPreprocessor> {
+    let sos_arr = sos.as_array();
+    if sos_arr.ncols() != 6 {
+        return Err(PyValueError::new_err("sos must have shape (n_sections, 6)"));
+    }
+    let sos_vec: Vec<[f64; 6]> = sos_arr
+        .outer_iter()
+        .map(|r| [r[0], r[1], r[2], r[3], r[4], r[5]])
+        .collect();
+    if sos_vec.is_empty() {
+        return Err(PyValueError::new_err("sos must have at least one section"));
+    }
+    let padlen = dsp::filter::default_padlen(&sos_vec);
+    let batch = if batch == 0 {
+        rayon::current_num_threads().max(1)
+    } else {
+        batch
+    };
+    let params = ChainParams {
+        sos: sos_vec,
+        padlen,
+        margin,
+        batch,
+        eps,
+        apply_mean,
+        calib_samples,
+        whiten,
+    };
+    let inner = py.detach(move || Pipeline::new(calib, stream, params));
+    Ok(PyPreprocessor { inner })
+}
+
+#[pyclass(name = "Preprocessor")]
+struct PyPreprocessor {
+    inner: Pipeline,
+}
+
+#[pymethods]
+impl PyPreprocessor {
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__<'py>(
+        mut slf: PyRefMut<'py, Self>,
+        py: Python<'py>,
+    ) -> Option<Bound<'py, PyArray2<f32>>> {
+        let inner = &mut slf.inner;
+        let next = py.detach(|| inner.next_chunk());
+        next.map(|array| array.into_pyarray(py))
+    }
+}
 
 impl From<ReaderError> for PyErr {
     fn from(err: ReaderError) -> PyErr {
@@ -40,6 +118,18 @@ impl From<CbinError> for PyErr {
             CbinError::Io(_) => PyIOError::new_err(message),
             _ => PyValueError::new_err(message),
         }
+    }
+}
+
+impl From<SimError> for PyErr {
+    fn from(err: SimError) -> PyErr {
+        PyValueError::new_err(err.to_string())
+    }
+}
+
+impl From<IfcError> for PyErr {
+    fn from(err: IfcError) -> PyErr {
+        PyValueError::new_err(err.to_string())
     }
 }
 
@@ -104,6 +194,41 @@ impl PySpikeGlxReader {
             inner: self.inner.chunks(chunk_samples),
         })
     }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (sos, chunk_samples, margin, calib_samples, eps = 1e-6, apply_mean = true, batch = 0, whiten = true))]
+    fn preprocess(
+        &self,
+        py: Python<'_>,
+        sos: PyReadonlyArray2<'_, f64>,
+        chunk_samples: usize,
+        margin: usize,
+        calib_samples: usize,
+        eps: f64,
+        apply_mean: bool,
+        batch: usize,
+        whiten: bool,
+    ) -> PyResult<PyPreprocessor> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        let calib: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        let stream: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        build_preprocessor(
+            py,
+            calib,
+            stream,
+            sos,
+            margin,
+            calib_samples,
+            eps,
+            apply_mean,
+            batch,
+            whiten,
+        )
+    }
 }
 
 #[pyclass(name = "SpikeGlxChunks")]
@@ -166,6 +291,41 @@ impl PyZarrReader {
         Ok(PyZarrChunks {
             inner: self.inner.chunks(chunk_samples),
         })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (sos, chunk_samples, margin, calib_samples, eps = 1e-6, apply_mean = true, batch = 0, whiten = true))]
+    fn preprocess(
+        &self,
+        py: Python<'_>,
+        sos: PyReadonlyArray2<'_, f64>,
+        chunk_samples: usize,
+        margin: usize,
+        calib_samples: usize,
+        eps: f64,
+        apply_mean: bool,
+        batch: usize,
+        whiten: bool,
+    ) -> PyResult<PyPreprocessor> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        let calib: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        let stream: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        build_preprocessor(
+            py,
+            calib,
+            stream,
+            sos,
+            margin,
+            calib_samples,
+            eps,
+            apply_mean,
+            batch,
+            whiten,
+        )
     }
 }
 
@@ -231,6 +391,41 @@ impl PyCbinReader {
             inner: self.inner.chunks(chunk_samples),
         })
     }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (sos, chunk_samples, margin, calib_samples, eps = 1e-6, apply_mean = true, batch = 0, whiten = true))]
+    fn preprocess(
+        &self,
+        py: Python<'_>,
+        sos: PyReadonlyArray2<'_, f64>,
+        chunk_samples: usize,
+        margin: usize,
+        calib_samples: usize,
+        eps: f64,
+        apply_mean: bool,
+        batch: usize,
+        whiten: bool,
+    ) -> PyResult<PyPreprocessor> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        let calib: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        let stream: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        build_preprocessor(
+            py,
+            calib,
+            stream,
+            sos,
+            margin,
+            calib_samples,
+            eps,
+            apply_mean,
+            batch,
+            whiten,
+        )
+    }
 }
 
 #[pyclass(name = "CbinChunks")]
@@ -240,6 +435,260 @@ struct PyCbinChunks {
 
 #[pymethods]
 impl PyCbinChunks {
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__<'py>(
+        mut slf: PyRefMut<'py, Self>,
+        py: Python<'py>,
+    ) -> Option<Bound<'py, PyArray2<i16>>> {
+        let inner = &mut slf.inner;
+        let next = py.detach(|| inner.next());
+        next.map(|array| array.into_pyarray(py))
+    }
+}
+
+#[pyclass(name = "SyntheticEphysReader")]
+struct PySyntheticEphysReader {
+    inner: SyntheticEphysReader,
+}
+
+#[pymethods]
+impl PySyntheticEphysReader {
+    #[new]
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (n_channels, duration_s, sample_rate = 30000.0, n_units = 20, firing_rate = 5.0, pitch = 20.0, noise_uv = 10.0, lsb_uv = 2.34, seed = 0))]
+    fn new(
+        n_channels: usize,
+        duration_s: f64,
+        sample_rate: f64,
+        n_units: usize,
+        firing_rate: f64,
+        pitch: f64,
+        noise_uv: f64,
+        lsb_uv: f64,
+        seed: u64,
+    ) -> PyResult<Self> {
+        let inner = SyntheticEphysReader::new(SimConfig {
+            n_channels,
+            duration_s,
+            sample_rate,
+            n_units,
+            firing_rate,
+            pitch,
+            noise_uv,
+            lsb_uv,
+            seed,
+        })?;
+        Ok(Self { inner })
+    }
+
+    #[getter]
+    fn n_channels(&self) -> usize {
+        self.inner.n_channels()
+    }
+
+    #[getter]
+    fn sample_rate(&self) -> f64 {
+        self.inner.sample_rate()
+    }
+
+    #[getter]
+    fn n_samples(&self) -> usize {
+        self.inner.n_samples()
+    }
+
+    fn ground_truth<'py>(&self, py: Python<'py>) -> GroundTruthArrays<'py> {
+        let (samples, units, peaks) = self.inner.ground_truth();
+        (
+            samples.into_pyarray(py),
+            units.into_pyarray(py),
+            peaks.into_pyarray(py),
+        )
+    }
+
+    #[pyo3(signature = (chunk_samples))]
+    fn chunks(&self, chunk_samples: usize) -> PyResult<PySyntheticEphysChunks> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        Ok(PySyntheticEphysChunks {
+            inner: self.inner.chunks(chunk_samples),
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (sos, chunk_samples, margin, calib_samples, eps = 1e-6, apply_mean = true, batch = 0, whiten = true))]
+    fn preprocess(
+        &self,
+        py: Python<'_>,
+        sos: PyReadonlyArray2<'_, f64>,
+        chunk_samples: usize,
+        margin: usize,
+        calib_samples: usize,
+        eps: f64,
+        apply_mean: bool,
+        batch: usize,
+        whiten: bool,
+    ) -> PyResult<PyPreprocessor> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        let calib: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        let stream: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        build_preprocessor(
+            py,
+            calib,
+            stream,
+            sos,
+            margin,
+            calib_samples,
+            eps,
+            apply_mean,
+            batch,
+            whiten,
+        )
+    }
+}
+
+#[pyclass(name = "SyntheticEphysChunks")]
+struct PySyntheticEphysChunks {
+    inner: SimChunkIter,
+}
+
+#[pymethods]
+impl PySyntheticEphysChunks {
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__<'py>(
+        mut slf: PyRefMut<'py, Self>,
+        py: Python<'py>,
+    ) -> Option<Bound<'py, PyArray2<i16>>> {
+        let inner = &mut slf.inner;
+        let next = py.detach(|| inner.next());
+        next.map(|array| array.into_pyarray(py))
+    }
+}
+
+#[pyclass(name = "SyntheticIfcReader")]
+struct PySyntheticIfcReader {
+    inner: SyntheticIfcReader,
+}
+
+#[pymethods]
+impl PySyntheticIfcReader {
+    #[new]
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (n_channels = 2, duration_s = 1.0, sample_rate = 100000.0, n_populations = 3, event_rate = 100.0, noise_level = 0.01, lsb = 1.0e-4, seed = 0))]
+    fn new(
+        n_channels: usize,
+        duration_s: f64,
+        sample_rate: f64,
+        n_populations: usize,
+        event_rate: f64,
+        noise_level: f64,
+        lsb: f64,
+        seed: u64,
+    ) -> PyResult<Self> {
+        let inner = SyntheticIfcReader::new(IfcConfig {
+            n_channels,
+            duration_s,
+            sample_rate,
+            n_populations,
+            event_rate,
+            noise_level,
+            lsb,
+            seed,
+        })?;
+        Ok(Self { inner })
+    }
+
+    #[getter]
+    fn n_channels(&self) -> usize {
+        self.inner.n_channels()
+    }
+
+    #[getter]
+    fn sample_rate(&self) -> f64 {
+        self.inner.sample_rate()
+    }
+
+    #[getter]
+    fn n_samples(&self) -> usize {
+        self.inner.n_samples()
+    }
+
+    fn ground_truth<'py>(&self, py: Python<'py>) -> GroundTruthArrays<'py> {
+        let (samples, populations, amplitudes) = self.inner.ground_truth();
+        (
+            samples.into_pyarray(py),
+            populations.into_pyarray(py),
+            amplitudes.into_pyarray(py),
+        )
+    }
+
+    #[pyo3(signature = (chunk_samples))]
+    fn chunks(&self, chunk_samples: usize) -> PyResult<PySyntheticIfcChunks> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        Ok(PySyntheticIfcChunks {
+            inner: self.inner.chunks(chunk_samples),
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (sos, chunk_samples, margin, calib_samples, eps = 1e-6, apply_mean = true, batch = 0, whiten = true))]
+    fn preprocess(
+        &self,
+        py: Python<'_>,
+        sos: PyReadonlyArray2<'_, f64>,
+        chunk_samples: usize,
+        margin: usize,
+        calib_samples: usize,
+        eps: f64,
+        apply_mean: bool,
+        batch: usize,
+        whiten: bool,
+    ) -> PyResult<PyPreprocessor> {
+        if chunk_samples == 0 {
+            return Err(PyValueError::new_err(
+                "chunk_samples must be greater than zero",
+            ));
+        }
+        let calib: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        let stream: ChunkStream = Box::new(self.inner.chunks(chunk_samples));
+        build_preprocessor(
+            py,
+            calib,
+            stream,
+            sos,
+            margin,
+            calib_samples,
+            eps,
+            apply_mean,
+            batch,
+            whiten,
+        )
+    }
+}
+
+#[pyclass(name = "SyntheticIfcChunks")]
+struct PySyntheticIfcChunks {
+    inner: IfcChunkIter,
+}
+
+#[pymethods]
+impl PySyntheticIfcChunks {
     fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
         slf
     }
@@ -264,5 +713,10 @@ fn segovia(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyZarrChunks>()?;
     m.add_class::<PyCbinReader>()?;
     m.add_class::<PyCbinChunks>()?;
+    m.add_class::<PySyntheticEphysReader>()?;
+    m.add_class::<PySyntheticEphysChunks>()?;
+    m.add_class::<PySyntheticIfcReader>()?;
+    m.add_class::<PySyntheticIfcChunks>()?;
+    m.add_class::<PyPreprocessor>()?;
     Ok(())
 }

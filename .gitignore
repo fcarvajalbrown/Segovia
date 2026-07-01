@@ -2,6 +2,7 @@
 **/*.rs.bk
 
 .venv/
+.venv-si/
 venv/
 __pycache__/
 *.py[cod]
@@ -33,3 +34,4 @@ Thumbs.db
 .env
 
 tests/data/
+bench/_tmp/

@@ -41,6 +41,7 @@ classifiers = [
 
 [project.optional-dependencies]
 test = ["pytest", "numpy", "zarr>=3"]
+bench = ["numpy", "scipy", "psutil", "matplotlib"]
 
 [project.urls]
 Homepage = "https://github.com/fcarvajalbrown/Segovia"

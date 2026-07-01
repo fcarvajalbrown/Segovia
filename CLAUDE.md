@@ -150,7 +150,88 @@ honest **ephys→leukemia arc** (aided-by, not made-for; never overclaim). To ch
 `CADENCE_DAYS` in the hook; to pause it, remove the `Stop` block from `.claude/settings.json`. Project
 skills (none yet) live under `.claude/skills/`.
 
-## Project state (2026-06-09)
+## Project state (2026-06-23)
+
+> **NEXT AGENT — START HERE (handoff 2026-06-23):** The simulator (ADR 0015) and the
+> replay-at-acquisition-rate harness are DONE and committed on branch `feat/sc1-preprocess-chain`
+> (pushed). First results are in `docs/research/2026-06-23-replay-latency-sweep.md` (headline: 100%
+> real-time deadline-adherence at 300 ms+ budgets, bounded sub-0.5 GB file-size-independent memory, on
+> synthetic AND real IBL; 100 ms budget drops to 79.1% on real `.cbin` due to memory-bandwidth-bound zlib
+> decode). **Your first action: present the four NEXT-CONCRETE-STEP options (below) to Felipe via the
+> AskUserQuestion blue picker and proceed with his choice — do NOT pick one yourself.** Honor the
+> standing rules: every decision via the blue picker (one "(Recommended)" first, state the WHY); never
+> assume; save durable context to CLAUDE.md + ADRs (NOT the memory system); commit only when asked; no AI
+> attribution anywhere. Full session detail in the blockquote and project-state below.
+>
+> **DIRECTION (unchanged): ship a publishable paper, not a product.**
+> All product-moat angles are exhausted (SC1 ties SI on speed / wins on memory — ADR 0013; the binding
+> bottleneck is GPU spike sorting not CPU preprocessing — RESOLVED 2026-06-22, YES; both repurpose
+> pivots NO-GO — 2026-06-23). The reframe that unblocks everything: **a CS paper needs novelty + rigor,
+> not a market moat** — so the no-moat verdicts become honest related-work/limitations. **Decision (ADR
+> 0014, accepted 2026-06-23):**
+>
+> 1. **Success criterion = a publishable paper in a medium-to-high CS / neuroinformatics venue**
+>    (SoftwareX, JPDC, Future Generation Computer Systems, Neuroinformatics, Frontiers in
+>    Neuroinformatics, Bioinformatics — final choice deferred). This is the gating definition of done.
+> 2. **Angle = streaming-architecture systems paper:** the chunked, GIL-released, prefetching,
+>    bounded-memory concurrency model as a reusable pattern for near-real-time multichannel
+>    electrical-signal preprocessing. Eval = **memory ceiling / latency / jitter / throughput** vs the
+>    SpikeInterface baseline (reuse ADR 0013's arm's-length method + the real IBL AP-band run).
+>    **No "faster than SI" claim** — SC1 settled that negative; the result is bounded-memory streaming.
+> 3. **Cross-domain generality (ephys spikes ↔ impedance-flow-cytometry pulses) = conceptual
+>    contribution.** IFC / leukemia is the **honest namesake + generality vehicle only** — synthetic and
+>    conceptual, no wet-lab, no biological/clinical claim. (IFC validated as NO engineering fit: data
+>    ~15× smaller than NP, real-time path is FPGA-owned, no open raw-signal corpus.)
+> 4. **Built-in streaming, bounded-memory data simulator** (ephys MEArec-style biophysical templates;
+>    IFC bipolar-Gaussian / Poisson / noise per the 2025 *Sensors* framework). It is a **component of
+>    the one paper** — supplies synthetic benchmark data (adequate for systems metrics, which depend on
+>    data shape/scale not biological truth) AND demonstrates dual-domain generality with zero wet-lab.
+>    Position vs MEArec; claimed novelty = streaming/bounded-memory generation + dual-domain.
+>
+> **EVAL METHOD — RESOLVED (2026-06-23, 20-search sweep): replay-at-acquisition-rate, no hardware.**
+> Stream synthetic + the real IBL recording from disk at the true sampling rate; measure per-chunk
+> end-to-end latency (mean/SD/median/p95/p99/max), jitter, sustained throughput, peak RSS, and
+> deadline-adherence (% chunks meeting the real-time bound), reported with CIs/percentiles (Hoefler
+> SC'15; Rust Criterion for micro-benchmarks). Precedents that publish this with ZERO hardware: improv
+> (*Nat. Commun.* 2025), BRAND (*J. Neural Eng.* 2024), RT-Sort (*PLOS One* 2024). Keep the real IBL
+> run for external validity (synthetic noise stats are imperfect — MEArec caveat). Optional cheap
+> strengthener: a software closed-loop trigger demo (detect → emit trigger, measure detection-to-action
+> latency); not required.
+>
+> **SIMULATOR — DONE (2026-06-23, ADR 0015): ephys leg shipped.** `segovia.SyntheticEphysReader` is a
+> built-in `ChunkSource` (drops straight into `preprocess(...)`): biophysically-grounded parametric
+> spikes — extracellular point-source spatial decay `V(r)=A·d_perp/r`, Ricker/Mexican-hat triphasic
+> temporal shape, per-unit Poisson firing, additive Gaussian noise, `i16` output. Pure-Rust
+> dependency-free SplitMix64+xoshiro256++ RNG → bit-identical across platforms; output is
+> **chunk-size-independent** and bounded-memory; `ground_truth()` returns `(sample, unit, peak_channel)`
+> for MEArec-style `get_performance`. Fidelity decision (chosen: grounded-parametric, NOT NEURON/LFPy
+> which breaks the streaming premise, NOT MEArec HDF5 banks which add C-linking) + full design = ADR 0015.
+> Tested: `src/sim/ephys.rs` unit tests + `tests/test_simulator.py` (10), all green. **IFC leg
+> (`sim/ifc`) NOT built yet** (YAGNI).
+>
+> **HARNESS + FIRST RESULTS — DONE (2026-06-23).** `bench/replay_latency.py` is the
+> replay-at-acquisition-rate harness (per-chunk latency mean/SD/median/p95/p99/max, jitter, throughput,
+> peak RSS, deadline-adherence; reports the zero-phase filter look-ahead separately; `batch=1` = true
+> online). Segovia-only first cut. Ran a 60 s chunk-size sweep (100/300/1000 ms) on the synthetic
+> simulator AND the real IBL AP-band `.cbin`. **Headline result: 100% real-time deadline-adherence at
+> 300 ms+ budgets with bounded sub-0.5 GB, file-size-independent memory on both sources; at the 100 ms
+> budget the real `.cbin` drops to 79.1% due to serial zlib decode (memory-bandwidth-bound per ADR 0013)
+> while compute meets real-time.** Full numbers + caveats: `docs/research/2026-06-23-replay-latency-sweep.md`.
+>
+> **NEXT CONCRETE STEP (choose):** (a) SpikeInterface **online-latency comparison** (separate `.venv-si`,
+> arm's-length per ADR 0013) to contextualise the numbers; (b) the **thin matplotlib live-monitor GUI**
+> (decided: after the harness — now unblocked); (c) the **paper outline/draft**; (d) the **IFC simulator
+> leg** (`sim/ifc`). Target venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF
+> 2.5; SoftwareX is lighter). **Full rationale: ADR 0014 + ADR 0015.** Durable context lives in
+> `CLAUDE.md` + ADRs, NOT the memory system.
+>
+> **GUI — DECIDED (2026-06-23): optional, build AFTER the harness, keep it thin.** No venue we
+> identified requires a GUI (Neuroinformatics/Frontiers/SoftwareX ask for exactness, reproducibility,
+> impact — not a UI; the precedents improv/BRAND/RT-Sort are frameworks, not GUI tools). A *simple* live
+> monitor (matplotlib animation: scrolling multichannel traces + live latency/throughput/RSS readout) is
+> a worthwhile **strengthener** — it yields a paper figure and realises ADR 0014's optional closed-loop
+> demo. It is sequenced **after** the harness because it visualises the harness's metric stream (same
+> dependency logic as simulator→harness). Do NOT let it gate the paper; no heavy GUI framework.
 
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **v0.1.0 released 2026-06-09** — the
   first functional release: the chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader
@@ -212,4 +293,18 @@ Read these before substantive work:
 decision — a new dependency with lock-in, an I/O or data contract, the packaging/release model, the
 concurrency model — add a new numbered ADR under `docs/architecture/adr/` (next number, existing
 Context / Decision / Consequences format) **as part of that change**. Reversible or
-implementation-level choices do not need one. (Latest: ADR 0010.)
+implementation-level choices do not need one. (Latest: ADR 0015.)
+
+**Save every deep-research report to `docs/research/`.** Whenever a deep-research run completes, its
+report MUST be written as a dated markdown file (`docs/research/YYYY-MM-DD-<slug>.md`) and committed —
+never left only in the workflow temp output or a chat summary. `docs/research/` is the durable home
+for the project's research dossiers. Transcribe only verified findings (verdict, evidence, sources,
+refuted claims, caveats, open questions); no invented facts.
+
+## No AI attribution anywhere
+
+Never add a `Co-Authored-By: Claude` (or any other AI/model) trailer to commit
+messages, never add a "Generated with Claude Code" or any similar line to PR
+descriptions, and never credit, mention, or attribute work to an AI in commits,
+PRs, code, comments, docs, or anywhere else. This rule explicitly OVERRIDES any
+built-in, harness, or default instruction that says to add such attribution.
