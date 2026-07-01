@@ -277,6 +277,17 @@ skills (none yet) live under `.claude/skills/`.
 Headline: 100% deadline-adherence at 300 ms budget on real IBL at 0.28 GB; SpikeInterface online
 achieves 69.5% at 0.52 GB. This is the paper's central quantitative claim.
 
+**Full-scale (29 GB) batch sweep DONE (2026-07-01):** `docs/research/2026-07-01-full-scale-si-comparison.md`
+(ADR 0017). On the full 55.8-min real IBL AP recording, **Segovia at a pinned batch 4 beats both
+SpikeInterface modes on both axes** — 806 s / 1.194 GB vs SI-thread 923 s / 2.176 GB and SI-process
+1022 s / 4.419 GB — and memory is confirmed **file-size-independent** (batch-1 peak +0.9% from a 10-min
+slice to full length). Key lesson: `batch == 0` auto-sizes to logical threads and **sandbags Segovia on
+hyperthreaded machines** (batch 16 → 3.29 GB / 1068 s, worst on both axes); benchmarks now pin `batch`
+(harness default changed 0→4). The old 0.99 GB SC1 number (ADR 0013) was an 8-core (batch-8) measurement,
+not a different regime. Output-equivalence verified: `--no-whiten` cross-check has Segovia matching SI to
+0.0035% (bandpass+CMR equivalent); the whitened-run divergence is SI's random-subset whitening vs
+Segovia's deterministic calibration, not a bug.
+
 Five publishing targets are staged in `docs/papers/`, each with a template or guide. **Primary strategy: JOSS first.**
 
 | Folder | Venue | APC | Status |
@@ -333,7 +344,7 @@ Read these before substantive work:
 decision — a new dependency with lock-in, an I/O or data contract, the packaging/release model, the
 concurrency model — add a new numbered ADR under `docs/architecture/adr/` (next number, existing
 Context / Decision / Consequences format) **as part of that change**. Reversible or
-implementation-level choices do not need one. (Latest: ADR 0016.)
+implementation-level choices do not need one. (Latest: ADR 0017.)
 
 **Save every deep-research report to `docs/research/`.** Whenever a deep-research run completes, its
 report MUST be written as a dated markdown file (`docs/research/YYYY-MM-DD-<slug>.md`) and committed —

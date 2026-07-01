@@ -104,7 +104,7 @@ def parse_args():
     p.add_argument("--fmin", type=float, default=300.0)
     p.add_argument("--fmax", type=float, default=6000.0)
     p.add_argument("--n-jobs", type=int, default=8)
-    p.add_argument("--batch", type=int, default=0)
+    p.add_argument("--batch", type=int, default=4)
     p.add_argument("--limit-samples", type=int, default=0)
     p.add_argument("--no-whiten", action="store_true")
     p.add_argument(
