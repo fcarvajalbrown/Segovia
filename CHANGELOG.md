@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-01
+
 ### Added
 - **IFC simulator leg** (`segovia.SyntheticIfcReader`): a second `sim` vertical modelling impedance
   flow cytometry as **bipolar-Gaussian pulses** (a positive then negative lobe as a particle transits

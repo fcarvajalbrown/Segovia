@@ -6,7 +6,7 @@ is the authoritative summary that release and version decisions are made against
 
 ## Current status
 
-- **Version:** `0.3.0` — three chunked, memory-bounded readers (SpikeGLX + Zarr + mtscomp `.cbin`) behind a shared `ChunkSource` trait, plus the streaming **bandpass → CMR → whiten** preprocessing chain (`reader.preprocess(...)`), live on crates.io + PyPI.
+- **Version:** `0.4.0` — three chunked, memory-bounded readers (SpikeGLX + Zarr + mtscomp `.cbin`) behind a shared `ChunkSource` trait, plus the streaming **bandpass → CMR → whiten** preprocessing chain (`reader.preprocess(...)`), live on crates.io + PyPI.
 - **Phase:** M2–4 (prove the win) **measured and resolved** — the MVP **bandpass → CMR → whiten**
   chain (Candidate D: eager Rayon over time-chunks, GIL released) is built, validated byte-faithful
   against a whole-signal scipy reference, and benchmarked on a real 1-hour IBL Neuropixels AP
