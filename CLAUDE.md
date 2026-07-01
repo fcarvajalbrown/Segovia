@@ -150,18 +150,20 @@ honest **ephys→leukemia arc** (aided-by, not made-for; never overclaim). To ch
 `CADENCE_DAYS` in the hook; to pause it, remove the `Stop` block from `.claude/settings.json`. Project
 skills (none yet) live under `.claude/skills/`.
 
-## Project state (2026-06-23)
+## Project state (2026-07-01)
 
-> **NEXT AGENT — START HERE (handoff 2026-06-23):** The simulator (ADR 0015) and the
-> replay-at-acquisition-rate harness are DONE and committed on branch `feat/sc1-preprocess-chain`
-> (pushed). First results are in `docs/research/2026-06-23-replay-latency-sweep.md` (headline: 100%
-> real-time deadline-adherence at 300 ms+ budgets, bounded sub-0.5 GB file-size-independent memory, on
-> synthetic AND real IBL; 100 ms budget drops to 79.1% on real `.cbin` due to memory-bandwidth-bound zlib
-> decode). **Your first action: present the four NEXT-CONCRETE-STEP options (below) to Felipe via the
-> AskUserQuestion blue picker and proceed with his choice — do NOT pick one yourself.** Honor the
-> standing rules: every decision via the blue picker (one "(Recommended)" first, state the WHY); never
-> assume; save durable context to CLAUDE.md + ADRs (NOT the memory system); commit only when asked; no AI
-> attribution anywhere. Full session detail in the blockquote and project-state below.
+> **NEXT AGENT — START HERE (handoff 2026-07-01):** All four of the 2026-06-23 NEXT-CONCRETE-STEP
+> options are now DONE and on `main` (the `feat/sc1-preprocess-chain` branch merged as **PR #9**;
+> **v0.4.0 shipped to crates.io + PyPI on 2026-07-01**): (a) the SpikeInterface online-latency
+> comparison (`docs/research/2026-06-30-online-latency-si-comparison.md`), (b) the live-monitor GUI
+> (`bench/live_monitor.py`), (c) the five staged paper drafts (`docs/papers/`), and (d) the IFC
+> simulator leg (`segovia.SyntheticIfcReader`, ADR 0016). **The remaining work is paper-submission
+> prep** (JOSS-first: real ORCID, AI-usage disclosure, verify `BuccinoMEArec2020` bib entry — see the
+> Papers section). **Non-paper software is feature-complete for the paper's scope**; open software
+> nice-to-haves are optional and listed under *Software — optional/pending* below. Honor the standing
+> rules: every decision via the blue picker (one "(Recommended)" first, state the WHY); never assume;
+> save durable context to CLAUDE.md + ADRs (NOT the memory system); commit only when asked; no AI
+> attribution anywhere.
 >
 > **DIRECTION (unchanged): ship a publishable paper, not a product.**
 > All product-moat angles are exhausted (SC1 ties SI on speed / wins on memory — ADR 0013; the binding
@@ -206,8 +208,15 @@ skills (none yet) live under `.claude/skills/`.
 > **chunk-size-independent** and bounded-memory; `ground_truth()` returns `(sample, unit, peak_channel)`
 > for MEArec-style `get_performance`. Fidelity decision (chosen: grounded-parametric, NOT NEURON/LFPy
 > which breaks the streaming premise, NOT MEArec HDF5 banks which add C-linking) + full design = ADR 0015.
-> Tested: `src/sim/ephys.rs` unit tests + `tests/test_simulator.py` (10), all green. **IFC leg
-> (`sim/ifc`) NOT built yet** (YAGNI).
+> Tested: `src/sim/ephys.rs` unit tests + `tests/test_simulator.py` (10), all green. **IFC leg —
+> DONE (2026-07-01, ADR 0016): `segovia.SyntheticIfcReader`** models impedance flow cytometry as
+> bipolar-Gaussian pulses (positive-then-negative lobe per particle transit) from `n_populations`
+> particle populations arriving as a homogeneous Poisson process, per-channel gains, additive Gaussian
+> noise, `i16` output. Same pure-Rust dependency-free RNG (bit-identical, chunk-size-independent,
+> bounded-memory); implements the same `ChunkSource` contract and streams through the unchanged
+> `preprocess(...)`; `ground_truth()` returns `(sample, population, amplitude)`. IFC-appropriate
+> defaults (100 kHz, 2 channels, µs-scale pulses). Tested: `src/sim/ifc.rs` unit tests +
+> `tests/test_ifc_simulator.py`.
 >
 > **HARNESS + FIRST RESULTS — DONE (2026-06-23).** `bench/replay_latency.py` is the
 > replay-at-acquisition-rate harness (per-chunk latency mean/SD/median/p95/p99/max, jitter, throughput,
@@ -218,20 +227,22 @@ skills (none yet) live under `.claude/skills/`.
 > budget the real `.cbin` drops to 79.1% due to serial zlib decode (memory-bandwidth-bound per ADR 0013)
 > while compute meets real-time.** Full numbers + caveats: `docs/research/2026-06-23-replay-latency-sweep.md`.
 >
-> **NEXT CONCRETE STEP (choose):** (a) SpikeInterface **online-latency comparison** (separate `.venv-si`,
-> arm's-length per ADR 0013) to contextualise the numbers; (b) the **thin matplotlib live-monitor GUI**
-> (decided: after the harness — now unblocked); (c) the **paper outline/draft**; (d) the **IFC simulator
-> leg** (`sim/ifc`). Target venue tier Q2 (Neuroinformatics IF 3.1 / Frontiers in Neuroinformatics IF
-> 2.5; SoftwareX is lighter). **Full rationale: ADR 0014 + ADR 0015.** Durable context lives in
-> `CLAUDE.md` + ADRs, NOT the memory system.
+> **NEXT CONCRETE STEP — ALL FOUR DONE (2026-07-01):** (a) SpikeInterface online-latency comparison ✅
+> `docs/research/2026-06-30-online-latency-si-comparison.md`; (b) the matplotlib live-monitor GUI ✅
+> `bench/live_monitor.py`; (c) the paper drafts ✅ five targets staged in `docs/papers/`; (d) the IFC
+> simulator leg ✅ `segovia.SyntheticIfcReader` (ADR 0016). Target venue tier Q2 (Neuroinformatics IF
+> 3.1 / Frontiers in Neuroinformatics IF 2.5; SoftwareX is lighter); **JOSS-first per the Papers
+> section.** Durable context lives in `CLAUDE.md` + ADRs, NOT the memory system.
 >
-> **GUI — DECIDED (2026-06-23): optional, build AFTER the harness, keep it thin.** No venue we
-> identified requires a GUI (Neuroinformatics/Frontiers/SoftwareX ask for exactness, reproducibility,
-> impact — not a UI; the precedents improv/BRAND/RT-Sort are frameworks, not GUI tools). A *simple* live
-> monitor (matplotlib animation: scrolling multichannel traces + live latency/throughput/RSS readout) is
-> a worthwhile **strengthener** — it yields a paper figure and realises ADR 0014's optional closed-loop
-> demo. It is sequenced **after** the harness because it visualises the harness's metric stream (same
-> dependency logic as simulator→harness). Do NOT let it gate the paper; no heavy GUI framework.
+> **GUI — DONE (2026-07-01): `bench/live_monitor.py`.** A thin matplotlib live monitor (a `FuncAnimation`
+> over a background streaming thread): scrolling multichannel traces with threshold-crossing markers,
+> plus a live readout of per-chunk latency mean/p95, deadline-adherence, trigger detections/rate,
+> throughput (MB/s), peak RSS, and seconds streamed. Runs against any reader — `--kind cbin` (real IBL
+> `.cbin`, the default), `--kind spikeglx`, or `--kind synthetic` (the in-memory `SyntheticEphysReader`,
+> zero data files needed) — replaying at the true acquisition rate through the same `preprocess(...)`
+> chain the harness uses; `--save out.png` renders a headless snapshot. It realises ADR 0014's optional
+> closed-loop trigger demo and yields a paper figure. Kept deliberately thin (no heavy GUI framework);
+> it does NOT gate the paper.
 
 - **Repo:** https://github.com/fcarvajalbrown/Segovia (`origin`). **v0.1.0 released 2026-06-09** — the
   first functional release: the chunked, memory-bounded SpikeGLX `.meta`/`.bin` reader
@@ -249,9 +260,16 @@ skills (none yet) live under `.claude/skills/`.
   and the BPCells-Python monitor live in `docs/future/leukemia-direction.md`.
 - **GitHub page setup:** topics **set** ✅. Still TODO: set the About **description**, upload
   `assets/segovia-social.png` as the social preview, set the Website field, enable Issues + Discussions.
-- **Next up:** M0–2 remaining — the **Zarr (`zarrs`) reader** and a realistic **full-1-hour
-  bounded-memory run** (IBL data is `mtscomp`-compressed `.cbin`, so it needs a decompression path).
-  Then M2–4: the MVP **bandpass → CMR → whiten** chain + the SC1 benchmark go/no-go gate.
+- **Shipped through v0.4.0 (2026-07-01):** all three readers (SpikeGLX, Zarr, `.cbin`), the streaming
+  **bandpass → CMR → whiten** chain (`reader.preprocess(...)`), the SC1 memory-gate resolution (ADR
+  0013), the ephys + IFC simulators (`SyntheticEphysReader` / `SyntheticIfcReader`), the
+  replay-at-acquisition-rate harness (`bench/replay_latency.py`), the SI comparison, and the live-monitor
+  GUI. **The 12-month roadmap's M0–2 and the M2–4 gate are complete.**
+- **Software — optional/pending (none gate the paper):** these are nice-to-haves, not committed work —
+  read `direct-neural-biasing` source to confirm the niche (last M0–2 loose end); the M10–12
+  SpikeInterface preprocessing-backend integration (blocked by the AGPL↔MIT clash for an *in-process*
+  backend — benchmarking stays arm's-length); optional op-library breadth (resampling, cross-channel
+  ops). **Next actual step is paper-submission prep, not software** — see the Papers section.
 
 ## Papers — five targets staged (2026-06-30)
 
@@ -315,7 +333,7 @@ Read these before substantive work:
 decision — a new dependency with lock-in, an I/O or data contract, the packaging/release model, the
 concurrency model — add a new numbered ADR under `docs/architecture/adr/` (next number, existing
 Context / Decision / Consequences format) **as part of that change**. Reversible or
-implementation-level choices do not need one. (Latest: ADR 0015.)
+implementation-level choices do not need one. (Latest: ADR 0016.)
 
 **Save every deep-research report to `docs/research/`.** Whenever a deep-research run completes, its
 report MUST be written as a dated markdown file (`docs/research/YYYY-MM-DD-<slug>.md`) and committed —
