@@ -253,6 +253,28 @@ skills (none yet) live under `.claude/skills/`.
   bounded-memory run** (IBL data is `mtscomp`-compressed `.cbin`, so it needs a decompression path).
   Then M2–4: the MVP **bandpass → CMR → whiten** chain + the SC1 benchmark go/no-go gate.
 
+## Papers — five targets staged (2026-06-30)
+
+**SI online-latency comparison DONE (2026-06-30):** `docs/research/2026-06-30-online-latency-si-comparison.md`.
+Headline: 100% deadline-adherence at 300 ms budget on real IBL at 0.28 GB; SpikeInterface online
+achieves 69.5% at 0.52 GB. This is the paper's central quantitative claim.
+
+Five publishing targets are staged in `docs/papers/`, each with a template or guide. **Primary strategy: JOSS first.**
+
+| Folder | Venue | APC | Status |
+|---|---|---|---|
+| `JOSS/` | Journal of Open Source Software | Free (diamond OA) | DRAFT — `paper.md` + `paper.bib` + `JOSS-TEMPLATE.md`; ~1000-word software paper |
+| `PCI-Neuroscience/` | PCI Neuroscience + Peer Community Journal | Free (diamond OA) | DRAFT — `paper.md` (full-length preprint with all tables) + `paper.bib` |
+| `GigaByte/` | GigaByte (Technical Release) | $535, waiver available | DRAFT — `paper.md` (short Technical Release) + `paper.bib`; XML platform, contact for waiver |
+| `JSS/` | Journal of Statistical Software | Free (diamond OA) | DRAFT — `paper.md` (stats-framed, must convert to LaTeX before submission); ~53 wks; LaTeX template not yet fetched |
+| `ReScienceC/` | ReScience C | Free (platinum OA) | **SCOPE MISMATCH** — `paper.md` is a stub only; replications-only journal; no replication target identified |
+
+**Before any JOSS submission, complete these:**
+- Replace `orcid: 0000-0000-0000-0000` with Felipe's real ORCID (register free at orcid.org).
+- Fill in `# AI usage disclosure` section in `paper.md`.
+- Verify `paper.bib` entry `BuccinoMEArec2020` — authors were written from memory, cross-check
+  against the actual Neuroinformatics 2020 paper before submission.
+
 ## Automated publishing — DONE (proven on v0.1.0, 2026-06-09)
 
 Package publishing is fully automated and proven: a deliberate `gh release create v*` ships **both**
