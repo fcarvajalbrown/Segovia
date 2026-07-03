@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+- **Conservative OOM safety cap on the `batch == 0` auto default.** `reader.preprocess(...)` with the
+  default (auto) batch now caps parallel width at `min(logical_threads, 4)` instead of one in-flight
+  slab per logical thread. Resident memory is `~0.17 GB × batch + ~0.5 GB`, so the previous unbounded
+  auto default projected to ~3.3 GB on a 16-thread box and ~6 GB+ on larger servers — a runaway-memory
+  footgun that could OOM low-RAM hosts. The cap bounds the default to ~1.2 GB on any machine. Callers
+  passing an explicit `batch >= 1` are unaffected. This is an OOM safety guard, not a throughput-optimum
+  claim; the optimal-default question stays open. See ADR 0018.
+
 ## [0.4.0] - 2026-07-01
 
 ### Added

@@ -52,7 +52,7 @@ fn build_preprocessor(
     }
     let padlen = dsp::filter::default_padlen(&sos_vec);
     let batch = if batch == 0 {
-        rayon::current_num_threads().max(1)
+        rayon::current_num_threads().clamp(1, 4)
     } else {
         batch
     };
