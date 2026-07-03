@@ -10,9 +10,9 @@ Preprint. Submitted to PCI Neuroscience for open peer review.
 
 High-density extracellular electrophysiology probes (Neuropixels) acquire 384–768 channels at
 30 kHz, generating data at ~22 MB/s per probe. Preprocessing this stream for near-real-time
-applications—closed-loop stimulation, online brain-machine interface decoding—requires that each
-chunk of incoming samples be processed within its acquisition period while keeping peak memory
-bounded and independent of recording length. Batch-oriented tools driven one chunk at a time
+applications such as closed-loop stimulation or online brain-machine interface decoding requires
+that each chunk of incoming samples be processed within its acquisition period while keeping peak
+memory bounded and independent of recording length. Batch-oriented tools driven one chunk at a time
 re-read filter-margin neighbourhoods on every call and do not bound memory analytically. We
 describe Segovia, an open-source Rust library (AGPL-3.0) with Python bindings (PyO3) that
 addresses this gap. Segovia's core abstraction is the `ChunkSource` trait: an iterator over
@@ -22,9 +22,10 @@ for the duration of each Rust computation. Peak memory is analytically bounded b
 not recording length. We evaluate Segovia on a real International Brain Laboratory Neuropixels
 AP-band recording (385 channels, mtscomp-compressed) and on a built-in streaming synthetic
 simulator (`SyntheticEphysReader`), using a replay-at-acquisition-rate harness that measures
-per-chunk latency and deadline adherence without requiring hardware. At a 300 ms chunk budget on
-real data, Segovia achieves 100% real-time deadline adherence at 0.28 GB peak RSS; an equivalent
-SpikeInterface online-streaming configuration achieves 69.5% adherence at 0.52 GB. Segovia is
+per-chunk latency and deadline adherence without requiring hardware. Streaming the full 55.8-minute
+recording at a 300 ms chunk budget, Segovia meets its real-time deadline on 99.7% of chunks at
+0.21 GB peak RSS, against 94.7% at 0.41 GB for an equivalent SpikeInterface online-streaming
+configuration; in the cold-start window that gap is wider (100% vs 69.5%). Segovia is
 available at https://github.com/fcarvajalbrown/Segovia and via `pip install segovia`.
 
 ---
@@ -41,8 +42,8 @@ standard offline pipeline (SpikeInterface [@Buccino2020], MountainSort), this st
 recording is complete, optimized for throughput on a fixed dataset.
 
 Near-real-time applications impose different constraints. Closed-loop optogenetic stimulation
-must detect a neural event and respond within tens to hundreds of milliseconds—within the same
-chunk of samples that the event occurred in. Online brain-machine interface decoders must
+must detect a neural event and respond within tens to hundreds of milliseconds, inside the same
+chunk of samples the event occurred in. Online brain-machine interface decoders must
 continuously emit decoded signals with bounded latency. Hardware-in-the-loop experiments must
 synchronize preprocessing output with external devices at acquisition rate. These applications
 require two guarantees that batch-oriented pipelines do not provide:
@@ -53,7 +54,7 @@ require two guarantees that batch-oriented pipelines do not provide:
    days; it cannot exhaust RAM as the recording grows.
 
 When a batch-oriented tool such as SpikeInterface is driven one chunk at a time via sequential
-`get_traces` calls—the natural online adaptation—each call re-reads and re-decodes the
+`get_traces` calls, the natural online adaptation, each call re-reads and re-decodes the
 filter-margin neighbourhood (the look-ahead and look-behind samples needed by the filter), and
 whitening-matrix estimation may be repeated or anchored to cached state in ways not designed for
 streaming. Memory usage grows with the number of processed chunks or with the mapping of the
@@ -184,7 +185,7 @@ deadline adherence; peak whole-process RSS (sampled every 20 ms in-process); sus
 
 **SpikeInterface baseline.** SI is run in a separate venv (`.venv-si`, `spikeinterface==0.102.3`)
 in the same process, driven by sequential `get_traces(start_frame, end_frame)` calls with
-`n_jobs = 1`—the online analog of Segovia's `batch = 1`. Filter margin is matched
+`n_jobs = 1`, the online analog of Segovia's `batch = 1`. Filter margin is matched
 (`bandpass_filter(margin_ms=50.0)`). Whitening uses `mode="global"` with random calibration
 chunks (SI default); Segovia uses the first 60 000 samples. Both differences affect only warm-up
 and are excluded by the 3-chunk discard.
@@ -196,8 +197,25 @@ and are excluded by the 3-chunk discard.
 ### 5.1 Real IBL AP-band recording
 
 Source: `_spikeglx_ephysData_g0_t0.imec0.ap.cbin` from the IBL reproducible ephys dataset
-[@IBL2025] (mtscomp-compressed, 385 channels including sync, 30 kHz, first 60 s = 1 800 000
-samples).
+[@IBL2025] (mtscomp-compressed, 385 channels including sync, 30 kHz).
+
+**Full length, 300 ms budget (steady state, 55.8 min, 11,167 chunks).** This is the representative
+sustained-streaming measurement and the headline online result:
+
+| Engine | Mean (ms) | p95 (ms) | p99 (ms) | Max (ms) | Jitter (ms) | Adherence | Peak RSS | Throughput |
+|---|---|---|---|---|---|---|---|---|
+| Segovia | 179.2 | 256.3 | 277.0 | 334.5 | 38.6 | **99.7%** | **0.21 GB** | 38.1 MB/s |
+| SpikeInterface online | 205.3 | 301.4 | 355.0 | 932.0 | 60.5 | 94.7% | 0.41 GB | 33.3 MB/s |
+
+Segovia leads on every axis; the decisive, large margins are peak memory (2×), maximum latency
+(334 vs 932 ms), p99 (277 vs 355 ms), and jitter (38.6 vs 60.5 ms). The deadline-adherence lead is
+real but small at steady state (99.7% vs 94.7%).
+
+**Cold-start, first 60 s (1 800 000 samples).** The per-chunk sweep below is the cold window (first
+reads, cold page cache, and library warm-up beyond the 3-chunk discard), where SpikeInterface's
+per-chunk `get_traces` setup cost is highest and the adherence gap is widest. It narrows to the
+steady-state figures above over the full recording, so these numbers characterise cold-start, not
+sustained operation:
 
 | Chunk | Engine | Mean (ms) | p95 (ms) | p99 (ms) | Max (ms) | Jitter (ms) | Adherence | Peak RSS | Throughput |
 |---|---|---|---|---|---|---|---|---|---|
@@ -210,12 +228,13 @@ samples).
 
 (597 / 197 / 57 chunks measured per row.)
 
-At the 300 ms budget, Segovia achieves 100% deadline adherence at 0.28 GB; SpikeInterface online
-achieves 69.5% at 0.52 GB. SI's per-chunk tail latency is high (p99 366 ms vs. Segovia's 256 ms)
-because each `get_traces` call re-reads and re-decodes the 50 ms filter-margin neighbourhood, with
-no cross-chunk pipelining. At 100 ms, both engines fall short of 100% adherence because the
-mtscomp zlib decode is memory-bandwidth bound (established in ADR 0013): the Rust compute meets
-the deadline but the decode does not.
+In this cold-start window at the 300 ms budget, Segovia reaches 100% deadline adherence at 0.28 GB
+and SpikeInterface online 69.5% at 0.52 GB, a wider gap than the 99.7% vs 94.7% seen at steady state
+above, because SI pays its per-chunk `get_traces` setup and margin re-decode most heavily before the
+run warms up (each call re-reads and re-decodes the 50 ms filter-margin neighbourhood, with no
+cross-chunk pipelining; SI cold p99 366 ms vs Segovia 256 ms). At 100 ms, both engines fall short of
+100% adherence because the mtscomp zlib decode is memory-bandwidth bound (established in ADR 0013):
+the Rust compute meets the deadline but the decode does not.
 
 Peak RSS scales only with chunk size on real data, consistent with the analytical bound. Segovia's
 RSS is below SI's at every chunk size.
@@ -236,22 +255,37 @@ markedly lower jitter than on real compressed data (3.6 ms vs 15.4 ms at 100 ms 
 lower jitter reflects the absence of zlib decode variance. Throughput exceeds 22 MB/s at all
 configurations.
 
-### 5.3 Batch throughput (context only)
+### 5.3 Batch throughput
 
-The online comparison above is not comparable to batch throughput. In the batch regime (SI's
-`ChunkRecordingExecutor`, `n_jobs = N`), SpikeInterface's parallel C/MKL kernels run across all
-cores and achieve speeds SI was designed for. Segovia ties SI on batch throughput and wins on
-peak memory (0.99 GB vs SI's 1.75 GB thread-pool / 2.84 GB process-pool, the latter exceeding
-the 2 GB bound). The no-faster-than-SI-in-batch conclusion (ADR 0013) stands and is not
-contradicted by the online results: SI is a batch tool; Segovia is a streaming tool. Each wins
-in its intended regime.
+The online comparison above is distinct from batch throughput, where SpikeInterface's parallel
+`ChunkRecordingExecutor` (`n_jobs = N`) runs its C/MKL kernels across all cores, the regime SI was
+designed for. We reran this comparison on the **full 55.8-minute (29 GB compressed) real IBL
+recording** with Segovia at a pinned batch of 4 (the throughput/memory optimum on this host, ADR
+0017; the footprint is `~0.17 GB × batch + 0.5 GB`):
+
+| Engine | Wall time | Peak RSS |
+|---|---|---|
+| Segovia (batch 4) | **806 s** | **1.19 GB** |
+| SpikeInterface (thread pool, `n_jobs = 8`) | 923 s | 2.18 GB |
+| SpikeInterface (process pool, `n_jobs = 8`) | 1022 s | 4.42 GB |
+
+At this pinned batch Segovia used less peak memory than both SI executor modes and completed in less
+wall time, in a single run. The memory advantage is the robust, deterministic result and is confirmed
+**file-size-independent at full scale** (batch-1 peak moved +0.9% from a ten-minute slice to the full
+recording). The wall-time margin is a single-machine, single-run measurement and should be replicated
+with confidence intervals across machines before being read as a general speed claim; the earlier
+report that Segovia only *ties* SI in batch (ADR 0013) was measured at the unpinned auto default,
+which oversubscribes memory-bandwidth-bound work on many-core hosts (ADR 0017). Output equivalence was
+verified: without whitening Segovia matches SI to 0.0035% (bandpass + CMR), and the whitened-run
+difference is SI's random-subset whitening calibration versus Segovia's deterministic
+first-60 000-sample calibration, not a computational error.
 
 ## 6. Discussion
 
 **The online vs batch distinction.** The results establish a clear separation: batch-oriented
 tools driven one chunk at a time pay per-chunk overhead that a purpose-built streaming engine
-eliminates. This is not a deficiency in SpikeInterface but a natural consequence of its design
-goal. The implication is that closed-loop applications requiring <300 ms preprocessing latency
+eliminates. This follows from SpikeInterface's design goal rather than any flaw in it. The
+implication is that closed-loop applications requiring <300 ms preprocessing latency
 with bounded memory should use a streaming-first tool; batch tools remain the right choice for
 offline analysis.
 
@@ -263,7 +297,7 @@ At 300 ms chunks this is ~400–450 ms total. A causal single-pass filter mode w
 this paper are compute latency only; the look-ahead is reported separately by the harness.
 
 **Synthetic data limitations.** The synthetic simulator does not reproduce the exact noise
-statistics of real recordings—this is a documented limitation of the MEArec-style approach. The
+statistics of real recordings, a documented limitation of the MEArec-style approach. The
 benchmark metrics reported here (latency, memory, deadline adherence) are systems metrics that
 depend on data shape and scale, not on biological fidelity, so the synthetic results are valid
 for the claims made. The real IBL run is retained for external validity and surfaces the real
@@ -274,17 +308,16 @@ cores, 7.8 GB RAM). Performance on other hardware configurations will differ. Th
 memory bound `M = batch × (chunk + 2×margin) × channels × sizeof(f32)` is machine-independent;
 the latency and throughput figures are not.
 
-**Future work.** A causal filter mode; parallelized mtscomp decompression to lift the 100 ms
-budget limitation on compressed data; a thin live-monitor GUI for real-time latency/throughput/RSS
-visualization; the IFC cross-domain simulator leg (`sim/ifc`).
+**Future work.** A causal single-pass filter mode to remove the 50 ms look-ahead, and parallelized
+mtscomp decompression to lift the 100 ms budget limitation on compressed data.
 
 ## 7. Conclusion
 
 Segovia is a streaming, bounded-memory preprocessing engine for Neuropixels-scale electrophysiology
-that satisfies two hard constraints for near-real-time applications—real-time deadline adherence
-and file-size-independent memory—that batch-oriented tools do not provide in the online regime.
-At a 300 ms chunk budget on a real mtscomp-compressed IBL recording, Segovia achieves 100%
-deadline adherence at 0.28 GB; SpikeInterface online achieves 69.5% at 0.52 GB. The engine is
+that satisfies two hard constraints for near-real-time applications, real-time deadline adherence
+and file-size-independent memory, which batch-oriented tools do not provide in the online regime.
+Streaming the full 55.8-minute mtscomp-compressed IBL recording at a 300 ms chunk budget, Segovia
+meets its deadline on 99.7% of chunks at 0.21 GB; SpikeInterface online reaches 94.7% at 0.41 GB. The engine is
 available as `pip install segovia` (Python, PyPI) and `cargo add segovia` (Rust, crates.io) under
 AGPL-3.0-or-later.
 

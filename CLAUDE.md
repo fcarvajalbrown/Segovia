@@ -150,8 +150,31 @@ honest **ephys→leukemia arc** (aided-by, not made-for; never overclaim). To ch
 `CADENCE_DAYS` in the hook; to pause it, remove the `Stop` block from `.claude/settings.json`. Project
 skills (none yet) live under `.claude/skills/`.
 
-## Project state (2026-07-01)
+## Project state (2026-07-02)
 
+> **NEXT AGENT — PENDING TASK (added 2026-07-02): finish the full-length online sweep, then fold into
+> the papers.** Context: on 2026-07-02 we upgraded the online SI comparison from the 60-second slice to
+> the **full 55.8-minute** recording at the **300 ms** budget — result recorded in
+> `docs/research/2026-07-02-full-length-online-latency.md`: **Segovia 99.7% deadline-adherence / 0.21 GB
+> vs SpikeInterface online 94.7% / 0.41 GB** (11,167 chunks). KEY HONEST FINDING: at steady state the
+> deadline-adherence gap is small (5 pts), NOT the 30 pts the 60 s slice showed (100% vs 69.5%) — that
+> slice was cold-start. Segovia's *robust* online wins are **memory (2×), max latency (334 vs 932 ms),
+> p99 (277 vs 355), and jitter (39 vs 60)**, not the adherence gap. All four paper drafts were already
+> reframed to lead with the full-length steady-state numbers and relabel the 60 s tables as "cold-start"
+> (JOSS/PCI/GigaByte/JSS). **What's LEFT:** the 300 ms leg is done for both engines, but **100 ms and
+> 1000 ms were NOT rerun at full length** — the papers' cold-start tables still hold only 60 s data at
+> those two budgets. A guarded, detached runner is ready: **`bench/run_full_online.ps1`** runs the four
+> remaining legs (Segovia+SI × 100 ms + 1000 ms, ~3.2 h). Felipe launches it himself from a normal
+> PowerShell window (background/`!` launches in-session get reaped — that failure mode is why the runner
+> is detached with prereq/CPU/lock/heartbeat/status guardrails): `Start-Process powershell -ArgumentList
+> '-NoProfile','-ExecutionPolicy','Bypass','-File','C:\Projects\Segovia\bench\run_full_online.ps1'
+> -WindowStyle Hidden`. When it prints `DONE`, read `bench/_tmp/full_online_*.results.jsonl` and replace
+> the 100 ms / 1000 ms cold-start rows in the four papers with the steady-state numbers, then finalize.
+> Also still TODO from before: JOSS AI-usage-disclosure section, verify `BuccinoMEArec2020` bib entry.
+> NOTE: **nothing from the 2026-07-02 session is committed yet** — OOM cap (ADR 0018, `src/lib.rs`
+> `clamp(1,4)`, CHANGELOG), the full-scale batch + full-length online paper edits, and the two research
+> docs are all uncommitted in the working tree; commit only when Felipe asks.
+>
 > **NEXT AGENT — START HERE (handoff 2026-07-01):** All four of the 2026-06-23 NEXT-CONCRETE-STEP
 > options are now DONE and on `main` (the `feat/sc1-preprocess-chain` branch merged as **PR #9**;
 > **v0.4.0 shipped to crates.io + PyPI on 2026-07-01**): (a) the SpikeInterface online-latency
@@ -288,21 +311,33 @@ not a different regime. Output-equivalence verified: `--no-whiten` cross-check h
 0.0035% (bandpass+CMR equivalent); the whitened-run divergence is SI's random-subset whitening vs
 Segovia's deterministic calibration, not a bug.
 
-Five publishing targets are staged in `docs/papers/`, each with a template or guide. **Primary strategy: JOSS first.**
+Publishing targets are staged in `docs/papers/`. **NBDT SUBMITTED 2026-07-02** (see the table).
+**JOSS is de-prioritized:** it requires the repo be public >6 months with a distributed commit
+history, which this repo fails (first commit 2026-06-09; 39/44 commits on that day), so JOSS is
+blocked until ~Dec 2026. NBDT (Neurons, Behavior, Data analysis, and Theory) was chosen as the
+free, fast, no-history-rule target after a 40-search venue sweep — DOAJ-indexed platinum OA,
+~12-week turnaround, "software development" explicitly in scope.
 
 | Folder | Venue | APC | Status |
 |---|---|---|---|
-| `JOSS/` | Journal of Open Source Software | Free (diamond OA) | DRAFT — `paper.md` + `paper.bib` + `JOSS-TEMPLATE.md`; ~1000-word software paper |
+| `NBDT/` | Neurons, Behavior, Data analysis, and Theory | Free (platinum OA) | **SUBMITTED 2026-07-02** — `paper.tex` + `paper.bib` + `F_Carvajal_NBDT.pdf` (9 pp) + `SUBMISSION-GUIDE.md`; Scholastica, CC-BY, ~12 wk |
+| `JOSS/` | Journal of Open Source Software | Free (diamond OA) | BLOCKED (>6-mo public-history rule; ~Dec 2026) — `paper.md` + `paper.bib` + `JOSS-TEMPLATE.md`; ~1000-word software paper |
 | `PCI-Neuroscience/` | PCI Neuroscience + Peer Community Journal | Free (diamond OA) | DRAFT — `paper.md` (full-length preprint with all tables) + `paper.bib` |
 | `GigaByte/` | GigaByte (Technical Release) | $535, waiver available | DRAFT — `paper.md` (short Technical Release) + `paper.bib`; XML platform, contact for waiver |
 | `JSS/` | Journal of Statistical Software | Free (diamond OA) | DRAFT — `paper.md` (stats-framed, must convert to LaTeX before submission); ~53 wks; LaTeX template not yet fetched |
 | `ReScienceC/` | ReScience C | Free (platinum OA) | **SCOPE MISMATCH** — `paper.md` is a stub only; replications-only journal; no replication target identified |
 
-**Before any JOSS submission, complete these:**
-- Replace `orcid: 0000-0000-0000-0000` with Felipe's real ORCID (register free at orcid.org).
-- Fill in `# AI usage disclosure` section in `paper.md`.
-- Verify `paper.bib` entry `BuccinoMEArec2020` — authors were written from memory, cross-check
-  against the actual Neuroinformatics 2020 paper before submission.
+**NBDT submission (2026-07-02) — what was entered:** manuscript `docs/papers/NBDT/paper.tex`
+(compiled `F_Carvajal_NBDT.pdf`, 9 pp, leads with the full-length steady-state 99.7% vs 94.7%
+result); abstract + 6 keywords; suggested reviewers Draelos (Michigan) / Pandarinath (Emory-GT) /
+Hierlemann (ETH) / Newman (MIT-OpenEphys) / Denovellis (UCSF); reviewers-to-avoid Buccino + Garcia
+(direct SpikeInterface COI). `BuccinoMEArec2020` bib entry VERIFIED against the real Neuroinformatics
+2021 paper (19(1):185–204). Anti-AI editing pass (em-dashes, negative-parallelism, inflated-vocab,
+reflexive summaries removed) applied to the NBDT, JSS, and PCI drafts. **Still to confirm on NBDT's
+For-Authors page** (a JS app not machine-readable): abstract word cap, figure limits, preprint policy.
+
+**If pursuing JOSS later** (blocked until >6 months of distributed public history): fill the
+`# AI usage disclosure` section; ORCID (`0000-0002-8300-7587`) is already in all drafts.
 
 ## Automated publishing — DONE (proven on v0.1.0, 2026-06-09)
 
@@ -344,7 +379,7 @@ Read these before substantive work:
 decision — a new dependency with lock-in, an I/O or data contract, the packaging/release model, the
 concurrency model — add a new numbered ADR under `docs/architecture/adr/` (next number, existing
 Context / Decision / Consequences format) **as part of that change**. Reversible or
-implementation-level choices do not need one. (Latest: ADR 0017.)
+implementation-level choices do not need one. (Latest: ADR 0018.)
 
 **Save every deep-research report to `docs/research/`.** Whenever a deep-research run completes, its
 report MUST be written as a dated markdown file (`docs/research/YYYY-MM-DD-<slug>.md`) and committed —

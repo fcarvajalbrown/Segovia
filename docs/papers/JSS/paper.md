@@ -18,9 +18,9 @@ fallback target only.
 
 We introduce `segovia`, an open-source Python package (AGPL-3.0) with a Rust backend for
 streaming, bounded-memory preprocessing of high-density multichannel electrophysiology recordings.
-The package implements three statistical signal processing operations — 5th-order Butterworth
+The package implements three statistical signal processing operations, 5th-order Butterworth
 bandpass filtering, common median referencing (CMR), and global zero-phase component analysis
-(ZCA) whitening — as a composable pipeline that operates one fixed-size chunk at a time. Memory
+(ZCA) whitening, as a composable pipeline that operates one fixed-size chunk at a time. Memory
 consumption is bounded by chunk size and does not grow with recording length, making the package
 suitable for processing arbitrarily long recordings on memory-constrained systems and for
 near-real-time applications. We describe the software design, the statistical operations
@@ -100,9 +100,9 @@ chunks are whitened by `X_white = X @ W`. Whitening is computed in `f32`.
 The central Rust abstraction is the `ChunkSource` trait, an iterator over fixed-size
 `(samples × channels)` `i16` buffers. Three implementations are provided:
 
-- **`SpikeGlxReader`** — memory-mapped SpikeGLX `.bin` + `.meta` files.
-- **`ZarrReader`** — chunked Zarr arrays (gzip, zstd, Blosc) via the `zarrs` crate.
-- **`CbinReader`** — mtscomp-compressed IBL `.cbin` files via per-chunk zlib decompression.
+- **`SpikeGlxReader`** reads memory-mapped SpikeGLX `.bin` + `.meta` files.
+- **`ZarrReader`** reads chunked Zarr arrays (gzip, zstd, Blosc) through the `zarrs` crate.
+- **`CbinReader`** reads mtscomp-compressed IBL `.cbin` files through per-chunk zlib decompression.
 
 A `ChunkSource` is consumed by `preprocess(chunk_source, config)`, which runs the bandpass →
 CMR → whitening chain using Rayon's data-parallel thread pool. Cross-chunk filter state (IIR
@@ -123,20 +123,28 @@ Performance is evaluated by the replay-at-acquisition-rate method: data are stre
 30 kHz sampling rate and per-chunk compute latency is measured by monotonic clock. A chunk meets
 its real-time deadline when compute latency ≤ chunk period (`chunk_samples / fs`).
 
-On a real International Brain Laboratory Neuropixels AP-band recording (385 channels,
-mtscomp-compressed, first 60 s, Windows, 8 cores, 7.8 GB RAM):
+On the full 55.8-minute real International Brain Laboratory Neuropixels AP-band recording (385
+channels, mtscomp-compressed, 11,167 chunks, Windows, 8 physical / 16 logical cores) at the 300 ms
+budget (steady state), Segovia sustains 99.7% deadline adherence at 0.21 GB peak RSS versus
+SpikeInterface online (`get_traces`, `n_jobs=1`) at 94.7% and 0.41 GB, with markedly lower tail
+latency (max 334 vs 932 ms) and jitter (39 vs 60 ms). The cold-start first-60 s per-chunk sweep,
+where SpikeInterface's warm-up cost is highest and the adherence gap widest, is:
 
-| Chunk | Mean (ms) | p99 (ms) | Deadline adherence | Peak RSS |
+| Chunk | Mean (ms) | p99 (ms) | Deadline adherence (cold 60 s) | Peak RSS |
 |---|---|---|---|---|
 | 100 ms | 92.9 | 122.0 | 74.2% | 0.21 GB |
 | 300 ms | 194.5 | 256.4 | 100% | 0.28 GB |
 | 1000 ms | 617.3 | 705.9 | 100% | 0.49 GB |
 
-For comparison, SpikeInterface driven sequentially online (`get_traces`, `n_jobs=1`) achieves
-69.5% deadline adherence at 0.52 GB for the 300 ms budget. On synthetic uncompressed data,
+At 300 ms the 60 s slice shows Segovia 100% vs SpikeInterface 69.5%; that gap narrows to the
+steady-state 99.7% vs 94.7% above over the full recording. On synthetic uncompressed data,
 `segovia` achieves 100% adherence at all chunk sizes with jitter < 20 ms.
 
-Peak memory scales with chunk size and not recording length on all inputs.
+Peak memory scales with chunk size and not recording length on all inputs. On the full 55.8-minute
+(29 GB compressed) recording the memory bound holds to within 1% of a ten-minute slice; in a
+batch-throughput comparison there, Segovia at a pinned batch used less peak memory than both of
+SpikeInterface's parallel executor modes (1.19 GB vs 2.18 / 4.42 GB) and completed in less wall time
+(806 s vs 923 / 1022 s) in a single run.
 
 ## 5. Usage
 

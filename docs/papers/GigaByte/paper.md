@@ -65,7 +65,20 @@ Evaluation follows the replay-at-acquisition-rate methodology: data streamed at 
 rate with per-chunk compute latency measured by monotonic clock. Deadline adherence = fraction of
 chunks with latency ≤ chunk period.
 
-**Real IBL AP-band recording** (385 ch, mtscomp-compressed, first 60 s):
+**Real IBL AP-band recording, full length** (385 ch, mtscomp-compressed, 55.8 min, 11,167 chunks,
+300 ms budget — steady state):
+
+| Engine | Mean | p99 | Max | Adherence | Peak RSS | Jitter |
+|---|---|---|---|---|---|---|
+| Segovia | 179.2 ms | 277.0 ms | **334.5 ms** | **99.7%** | **0.21 GB** | **38.6 ms** |
+| SpikeInterface online | 205.3 ms | 355.0 ms | 932.0 ms | 94.7% | 0.41 GB | 60.5 ms |
+
+At steady state Segovia leads on every axis; the decisive margins are peak memory (2×), maximum
+latency (2.8×), and jitter. The per-chunk table below is the **cold-start first-60 s** window, where
+SpikeInterface's warm-up cost is highest and the adherence gap is widest (100% vs 69.5% at 300 ms);
+that gap narrows to the steady-state figures above over the full recording.
+
+**Real IBL AP-band recording, cold-start first 60 s** (385 ch, mtscomp-compressed):
 
 | Chunk | Engine | Mean latency | p99 | Adherence | Peak RSS |
 |---|---|---|---|---|---|
@@ -79,13 +92,18 @@ chunks with latency ≤ chunk period.
 **Synthetic recordings** (384 ch, `SyntheticEphysReader`, seed 0): 100% deadline adherence at
 all chunk sizes (100/300/1000 ms) with jitter 3.6/8.6/18.6 ms.
 
-Peak memory is bounded and file-size-independent on both sources. Throughput exceeds the
+Peak memory is bounded and file-size-independent on both sources; on the full 55.8-minute
+(29 GB compressed) real recording the memory bound holds to within 1% of a ten-minute slice. In a
+batch-throughput comparison on that full recording, Segovia at a pinned batch held peak memory below
+both SpikeInterface executor modes (1.19 GB vs 2.18 GB thread-pool and 4.42 GB process-pool) and
+completed in less wall time (806 s vs 923 s and 1022 s) in a single run; the memory bound is the
+robust result and the wall-time margin warrants multi-run replication. Throughput exceeds the
 22 MB/s Neuropixels acquisition rate at all configurations. Full tables and reproducibility
 scripts are in `docs/research/` and `bench/`.
 
 Known limitation: the zero-phase Butterworth filter introduces a 50 ms look-ahead; a causal
-filter mode is not yet implemented. Benchmarks are on a single machine (Windows, 8 cores,
-7.8 GB RAM).
+filter mode is not yet implemented. Benchmarks are on a single machine (Windows, 8 physical /
+16 logical cores).
 
 ## Conclusion
 

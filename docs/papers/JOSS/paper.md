@@ -91,20 +91,27 @@ measured with nanosecond-precision monotonic clocks. A chunk meets its real-time
 compute latency ≤ chunk period (`chunk_samples / fs`); deadline adherence is the fraction of
 chunks satisfying this bound.
 
-On an International Brain Laboratory Neuropixels AP-band recording (385 channels,
-mtscomp-compressed, first 60 s) at a 300 ms chunk budget, Segovia achieves 100% deadline
-adherence at 0.28 GB peak RSS. An equivalent SpikeInterface online-streaming configuration—
-sequential `get_traces` calls, `n_jobs = 1`—achieves 69.5% adherence at 0.52 GB, because each
-call re-decodes the filter-margin neighbourhood with no cross-chunk pipelining. At the 100 ms
-budget, Segovia outperforms SpikeInterface on deadline adherence (74.2% vs 64.2%) and on tail
-latency (p99 122 ms vs 275 ms). Throughput exceeds the 22 MB/s Neuropixels acquisition rate at
-all tested chunk sizes.
+On the full 55.8-minute International Brain Laboratory Neuropixels AP-band recording (385 channels,
+mtscomp-compressed, 11,167 chunks) at a 300 ms chunk budget, Segovia sustains 99.7% deadline
+adherence at 0.21 GB peak RSS; an equivalent SpikeInterface online configuration—sequential
+`get_traces` calls, `n_jobs = 1`—reaches 94.7% at 0.41 GB. At steady state the deadline-adherence
+margin is modest, but Segovia's advantage is decisive on the axes that bound worst-case real-time
+behaviour: half the peak memory, a 2.8× lower maximum latency (334 ms vs 932 ms), lower p99
+(277 ms vs 355 ms), and lower jitter (39 ms vs 60 ms), because each `get_traces` call re-decodes the
+filter-margin neighbourhood with no cross-chunk pipelining. A cold-start first-60 s window shows a
+wider adherence gap (100% vs 69.5%) that narrows as SpikeInterface amortises warm-up over the run;
+the full-length steady-state figures above are the representative measure. Throughput exceeds the
+22 MB/s Neuropixels acquisition rate.
 
-Peak memory is bounded and file-size-independent on both synthetic and real recordings: across all
-chunk sizes tested on the real `.cbin`, peak RSS remains below 0.5 GB regardless of recording
-length, consistent with the analytical bound. The SpikeInterface comparison covers only the online
-per-chunk regime; batch-throughput comparisons, where SpikeInterface's parallel executor is
-competitive, are documented separately in the repository.
+Peak memory is bounded and file-size-independent on both synthetic and real recordings: in the
+online regime peak RSS remains below 0.5 GB across all chunk sizes on the real `.cbin` regardless of
+recording length, and on the full 55.8-minute (29 GB compressed) recording the bound holds to within
+1% of a ten-minute slice, consistent with the analytical model. In a batch-throughput comparison on
+that full recording, Segovia at a pinned batch held peak memory well below both of SpikeInterface's
+parallel executors—1.19 GB versus 2.18 GB (thread pool) and 4.42 GB (process pool)—while completing
+in less wall time (806 s versus 923 s and 1022 s) in a single run. The bounded-memory result is the
+robust, deterministic advantage; the wall-time margin is a single-machine, single-run measurement
+that warrants replication with confidence intervals. Full batch tables are in the repository.
 
 A known limitation: the default bandpass filter is zero-phase (`sosfiltfilt`) and introduces a
 bounded look-ahead of `margin / fs` (50 ms at the default setting); the chain is therefore
