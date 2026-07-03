@@ -1,23 +1,23 @@
-# Automatically handle line endings for text files.
-# This suppresses the harmless "LF will be replaced by CRLF" warnings
-# that Git emits on Windows when core.autocrlf is enabled.
-* text=auto
+# Normalize line endings to LF for all text files.
+# This prevents the harmless but noisy "LF will be replaced by CRLF"
+# warnings that Git emits on Windows when core.autocrlf is enabled.
+* text=auto eol=lf
 
-# Explicitly mark common source/text files as text (LF in the repository).
-*.rs    text
-*.py    text
-*.toml  text
-*.md    text
-*.yml   text
-*.yaml  text
-*.json  text
-*.sh    text
-*.ps1   text
-*.txt   text
-*.cfg   text
-*.cff   text
-*.htm   text
-*.html  text
+# Explicitly mark common source/text files as text (LF in repository and checkout).
+*.rs    text eol=lf
+*.py    text eol=lf
+*.toml  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.sh    text eol=lf
+*.ps1   text eol=lf
+*.txt   text eol=lf
+*.cfg   text eol=lf
+*.cff   text eol=lf
+*.htm   text eol=lf
+*.html  text eol=lf
 
 # Treat common binary formats as binary (no line-ending conversion).
 *.png   binary
