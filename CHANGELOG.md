@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-03
+
 ### Changed
 - **Conservative OOM safety cap on the `batch == 0` auto default.** `reader.preprocess(...)` with the
   default (auto) batch now caps parallel width at `min(logical_threads, 4)` instead of one in-flight
