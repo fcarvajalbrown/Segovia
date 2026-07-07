@@ -43,6 +43,8 @@ electrophysiology; Neuropixels; streaming; real-time preprocessing; bounded memo
 
 Neuropixels probes \citep{Jun2017} acquire 384 channels at 30 kHz ($\sim$22 MB/s per probe). Standard preprocessing pipelines (SpikeInterface \citep{Buccino2020}, MountainSort) run offline on completed recordings and are optimized for batch throughput. Near-real-time applications, such as closed-loop stimulation and online brain-machine interface decoding, require that each incoming chunk of samples be preprocessed within its acquisition period (the real-time deadline), with peak memory independent of recording length. Batch tools driven one chunk at a time re-read filter-margin neighbourhoods on every call and do not bound memory analytically. Segovia was built to fill this gap: a composable streaming preprocessor whose memory ceiling is fixed by chunk size and whose per-chunk latency meets the acquisition deadline on real recordings.
 
+Existing ecosystems illustrate the gap. SpikeInterface \citep{Buccino2020} unifies sorters such as MountainSort \citep{Chung2017} and Kilosort \citep{Pachitariu2024} behind a common API, but its preprocessing is oriented to offline batch runs over completed recordings. Dedicated real-time neuroscience platforms exist, including improv \citep{Draelos2025}, BRAND \citep{Ali2024}, and RT-Sort \citep{vanderMolen2024}, but they target closed-loop experiment orchestration or online detection-and-sorting rather than a reusable, memory-bounded streaming preprocessor that other pipelines can compose. Segovia occupies that niche as a small primitive any of these systems could drive.
+
 \section{Implementation}
 
 \subsection{Core abstraction}
@@ -64,6 +66,10 @@ Peak resident memory scales as $\mathrm{batch} \times (\mathrm{chunk} + 2\,\math
 \subsection{Built-in simulator}
 
 \texttt{SyntheticEphysReader} emits arbitrarily long synthetic streams without writing to disk. Spike templates use a Ricker temporal waveform with point-source spatial decay ($V(r) = A\,d_\perp / r$); firing is Poisson per unit; noise is additive white Gaussian. The pseudorandom number generator (SplitMix64 + xoshiro256++) is platform-independent and chunk-size-independent. \texttt{ground\_truth()} returns (sample, unit, channel) tuples for downstream sorter evaluation.
+
+\subsection{Testing and validation}
+
+Correctness is covered by 38 Rust unit tests, spanning the DSP operators, the three readers, and the two simulators, and 39 Python integration tests under \texttt{tests/}. Each reader is validated to produce byte-identical output against reference recordings, and the preprocessing chain is validated against a whole-signal SciPy reference. The simulators' dependency-free Rust RNG yields bit-identical, chunk-size-independent output across platforms. Continuous integration (GitHub Actions) runs formatting, Clippy lints, and the full test suite on every push, alongside a wheel-build matrix across Linux, macOS, and Windows.
 
 \section{Results}
 
@@ -113,6 +119,10 @@ On synthetic recordings (384 channels, \texttt{SyntheticEphysReader}, seed 0) Se
 Peak memory is bounded and file-size-independent on both sources; on the full 55.8-minute (29 GB compressed) real recording the memory bound holds to within 1\% of a ten-minute slice. In a batch-throughput comparison on that full recording, Segovia at a pinned batch held peak memory below both SpikeInterface executor modes (1.19 GB vs 2.18 GB thread-pool and 4.42 GB process-pool) and completed in less wall time (806 s vs 923 s and 1022 s) in a single run; the memory bound is the robust result and the wall-time margin warrants multi-run replication. Throughput exceeds the 22 MB/s Neuropixels acquisition rate at all configurations.
 
 Known limitation: the zero-phase Butterworth filter introduces a 50 ms look-ahead; a causal filter mode is not yet implemented. Benchmarks are on a single machine (Windows, 8 physical / 16 logical cores).
+
+\subsection{Reproducibility}
+
+The benchmark harness ships in the repository: \texttt{bench/replay\_latency.py} drives Segovia and \texttt{bench/replay\_latency\_si.py} the SpikeInterface baseline, both replaying from disk at the true 30 kHz acquisition rate and timing each chunk with a monotonic clock; reported runs use a pinned batch width. Output equivalence was checked directly: with whitening disabled, Segovia matches SpikeInterface to 0.0035\% (the bandpass and common-median-reference stages are numerically equivalent). The whitened-run difference reflects SpikeInterface's random-subset whitening versus Segovia's deterministic calibration, not a discrepancy in the shared stages. Synthetic benchmarks reproduce exactly from a fixed seed.
 
 \section{Availability of source code and requirements}
 

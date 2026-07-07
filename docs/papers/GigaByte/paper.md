@@ -48,6 +48,14 @@ every call and do not bound memory analytically. Segovia was built to fill this 
 streaming preprocessor whose memory ceiling is fixed by chunk size and whose per-chunk latency meets
 the acquisition deadline on real recordings.
 
+Existing ecosystems illustrate the gap. SpikeInterface [@Buccino2020] unifies sorters such as
+MountainSort [@Chung2017] and Kilosort [@Pachitariu2024] behind a common API, but its preprocessing
+is oriented to offline batch runs over completed recordings. Dedicated real-time neuroscience
+platforms exist, including improv [@Draelos2025], BRAND [@Ali2024], and RT-Sort [@vanderMolen2024],
+but they target closed-loop experiment orchestration or online detection-and-sorting rather than a
+reusable, memory-bounded streaming preprocessor that other pipelines can compose. Segovia occupies
+that niche as a small primitive any of these systems could drive.
+
 ## Implementation
 
 ### Core abstraction
@@ -78,6 +86,16 @@ templates use a Ricker temporal waveform with point-source spatial decay (`V(r) 
 firing is Poisson per unit; noise is additive white Gaussian. The pseudorandom number generator
 (SplitMix64 + xoshiro256++) is platform-independent and chunk-size-independent. `ground_truth()`
 returns `(sample, unit, channel)` tuples for downstream sorter evaluation.
+
+### Testing and validation
+
+Correctness is covered by 38 Rust unit tests, spanning the DSP operators, the three readers, and the
+two simulators, and 39 Python integration tests under `tests/`. Each reader is validated to produce
+byte-identical output against reference recordings, and the preprocessing chain is validated against a
+whole-signal SciPy reference. The simulators' dependency-free Rust RNG yields bit-identical,
+chunk-size-independent output across platforms. Continuous integration (GitHub Actions) runs
+formatting, Clippy lints, and the full test suite on every push, alongside a wheel-build matrix across
+Linux, macOS, and Windows.
 
 ## Results
 
@@ -128,6 +146,17 @@ are in `docs/research/` and `bench/`.
 Known limitation: the zero-phase Butterworth filter introduces a 50 ms look-ahead; a causal filter
 mode is not yet implemented. Benchmarks are on a single machine (Windows, 8 physical / 16 logical
 cores).
+
+### Reproducibility
+
+The benchmark harness ships in the repository: `bench/replay_latency.py` drives Segovia and
+`bench/replay_latency_si.py` the SpikeInterface baseline, both replaying from disk at the true 30 kHz
+acquisition rate and timing each chunk with a monotonic clock; reported runs use a pinned batch width.
+Output equivalence was checked directly: with whitening disabled, Segovia matches SpikeInterface to
+0.0035% (the bandpass and common-median-reference stages are numerically equivalent). The whitened-run
+difference reflects SpikeInterface's random-subset whitening versus Segovia's deterministic
+calibration, not a discrepancy in the shared stages. Synthetic benchmarks reproduce exactly from a
+fixed seed.
 
 ## Availability of Supporting Source Code and Requirements
 
