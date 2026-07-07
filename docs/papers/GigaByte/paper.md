@@ -85,6 +85,10 @@ Evaluation follows a replay-at-acquisition-rate methodology: data are streamed a
 rate with per-chunk compute latency measured by a monotonic clock. Deadline adherence is the fraction
 of chunks with latency at or below the chunk period.
 
+Figure 1 summarizes the full-length steady-state comparison.
+
+![Full-length steady-state comparison on the real IBL AP-band recording (385 channels, 55.8 min, 300 ms budget). (a) Per-chunk latency (mean, p99, maximum) against the 300 ms real-time deadline; Segovia's 334.5 ms maximum yields 99.7% deadline adherence, whereas SpikeInterface online reaches 932 ms. (b) Peak resident memory, 0.21 GB versus 0.41 GB.](template/fig_latency_memory.png)
+
 **Real IBL AP-band recording, full length** (385 ch, mtscomp-compressed, 55.8 min, 11,167 chunks,
 300 ms budget, steady state):
 

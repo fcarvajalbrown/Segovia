@@ -69,7 +69,14 @@ Peak resident memory scales as $\mathrm{batch} \times (\mathrm{chunk} + 2\,\math
 
 Evaluation follows a replay-at-acquisition-rate methodology: data are streamed at the true 30 kHz rate with per-chunk compute latency measured by a monotonic clock. Deadline adherence is the fraction of chunks with latency at or below the chunk period.
 
-Table~\ref{tab:fulllength} reports the full-length steady-state comparison. At steady state Segovia leads on every axis; the decisive margins are peak memory (2$\times$), maximum latency (2.8$\times$), and jitter. Table~\ref{tab:coldstart} is the cold-start first-60 s window, where SpikeInterface's warm-up cost is highest and the adherence gap is widest (100\% vs 69.5\% at 300 ms); that gap narrows to the steady-state figures over the full recording.
+Figure~\ref{fig:latmem} and Table~\ref{tab:fulllength} report the full-length steady-state comparison. At steady state Segovia leads on every axis; the decisive margins are peak memory (2$\times$), maximum latency (2.8$\times$), and jitter. Table~\ref{tab:coldstart} is the cold-start first-60 s window, where SpikeInterface's warm-up cost is highest and the adherence gap is widest (100\% vs 69.5\% at 300 ms); that gap narrows to the steady-state figures over the full recording.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_latency_memory}
+\caption{Full-length steady-state comparison on the real IBL AP-band recording (385 channels, 55.8 min, 300 ms budget). (a) Per-chunk latency (mean, p99, maximum) against the 300 ms real-time deadline; Segovia's maximum of 334.5 ms yields 99.7\% deadline adherence, whereas SpikeInterface online reaches 932 ms. (b) Peak resident memory, 0.21 GB versus 0.41 GB.}
+\label{fig:latmem}
+\end{figure}
 
 \begin{table*}[t]
 \caption{Real IBL AP-band recording, full length (385 channels, mtscomp-compressed, 55.8 min, 11{,}167 chunks, 300 ms budget, steady state).}
