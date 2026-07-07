@@ -35,3 +35,10 @@ Thumbs.db
 
 tests/data/
 bench/_tmp/
+
+docs/papers/**/*.aux
+docs/papers/**/*.bbl
+docs/papers/**/*.blg
+docs/papers/**/*.log
+docs/papers/**/*.out
+docs/papers/**/template/paper.pdf

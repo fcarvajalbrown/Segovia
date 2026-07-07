@@ -311,19 +311,25 @@ not a different regime. Output-equivalence verified: `--no-whiten` cross-check h
 0.0035% (bandpass+CMR equivalent); the whitened-run divergence is SI's random-subset whitening vs
 Segovia's deterministic calibration, not a bug.
 
-Publishing targets are staged in `docs/papers/`. **NBDT SUBMITTED 2026-07-02** (see the table).
-**JOSS is de-prioritized:** it requires the repo be public >6 months with a distributed commit
-history, which this repo fails (first commit 2026-06-09; 39/44 commits on that day), so JOSS is
-blocked until ~Dec 2026. NBDT (Neurons, Behavior, Data analysis, and Theory) was chosen as the
-free, fast, no-history-rule target after a 40-search venue sweep — DOAJ-indexed platinum OA,
-~12-week turnaround, "software development" explicitly in scope.
+Publishing targets are staged in `docs/papers/`. **NBDT DESK-REJECTED 2026-07-07 → pivoted to
+GigaByte (Technical Release).** EiC Konrad Kording declined to send it out for review — explicitly on
+**scope, not quality** (he praised the work and called the analytical memory bound "a real strength").
+His reason: it is a software-systems contribution, not the neural-data-analysis / computational-neuro
+result NBDT publishes. He steered toward "a software- or systems-oriented venue, JOSS for the artifact,
+or a neuroinformatics journal." This **validates the ADR 0014 systems-paper reframe** and makes
+software/data-artifact venues the right tier. **Decision (2026-07-07, via picker): target GigaByte
+Technical Release** — chosen over JOSS (free but blocked until ~Dec 2026 by the >6-mo public-history
+rule), Frontiers in Neuroinformatics (~$2,950 APC, no reliable waiver), and PCI Neuroscience (free but
+carries the same neuroscience-scope risk NBDT just hit). GigaByte is scope-safe (software Technical
+Release is explicitly in scope), free with a waiver, and reviews the performance contribution on its
+own terms. **JOSS stays the eventual artifact home once the >6-mo history clears (~Dec 2026).**
 
 | Folder | Venue | APC | Status |
 |---|---|---|---|
-| `NBDT/` | Neurons, Behavior, Data analysis, and Theory | Free (platinum OA) | **SUBMITTED 2026-07-02** — `paper.tex` + `paper.bib` + `F_Carvajal_NBDT.pdf` (9 pp) + `SUBMISSION-GUIDE.md`; Scholastica, CC-BY, ~12 wk |
+| `NBDT/` | Neurons, Behavior, Data analysis, and Theory | Free (platinum OA) | **DESK-REJECTED 2026-07-07** (scope not quality; Kording, EiC) — reusable assets: `paper.tex` + `paper.bib` + `F_Carvajal_NBDT.pdf` (9 pp) |
 | `JOSS/` | Journal of Open Source Software | Free (diamond OA) | BLOCKED (>6-mo public-history rule; ~Dec 2026) — `paper.md` + `paper.bib` + `JOSS-TEMPLATE.md`; ~1000-word software paper |
 | `PCI-Neuroscience/` | PCI Neuroscience + Peer Community Journal | Free (diamond OA) | DRAFT — `paper.md` (full-length preprint with all tables) + `paper.bib` |
-| `GigaByte/` | GigaByte (Technical Release) | $535, waiver available | DRAFT — `paper.md` (short Technical Release) + `paper.bib`; XML platform, contact for waiver |
+| `GigaByte/` | GigaByte (Technical Release) | $535, waiver available | **ACTIVE TARGET (chosen 2026-07-07)** — `paper.md` reformatted into GigaByte's 11-section structure (v0.4.1, metadata block, declarations, abbreviations) + `paper.bib` + `editorial-email.md` (waiver + software-deposit query, ready to send); LaTeX/Word/PDF accepted, Overleaf `oup-contemporary` template (`.cls` needs login) |
 | `JSS/` | Journal of Statistical Software | Free (diamond OA) | DRAFT — `paper.md` (stats-framed, must convert to LaTeX before submission); ~53 wks; LaTeX template not yet fetched |
 | `ReScienceC/` | ReScience C | Free (platinum OA) | **SCOPE MISMATCH** — `paper.md` is a stub only; replications-only journal; no replication target identified |
 
@@ -335,6 +341,24 @@ Hierlemann (ETH) / Newman (MIT-OpenEphys) / Denovellis (UCSF); reviewers-to-avoi
 2021 paper (19(1):185–204). Anti-AI editing pass (em-dashes, negative-parallelism, inflated-vocab,
 reflexive summaries removed) applied to the NBDT, JSS, and PCI drafts. **Still to confirm on NBDT's
 For-Authors page** (a JS app not machine-readable): abstract word cap, figure limits, preprint policy.
+
+**GigaByte pre-submission checklist (as of 2026-07-07):**
+- **Manuscript** — DONE: `docs/papers/GigaByte/paper.md` reformatted into GigaByte's mandated order
+  (Abstract w/ Availability-and-Implementation subsection → Research Area/Classifications → Statement of
+  Need → Implementation → Results → Availability of Source Code + metadata block → Data Availability →
+  Abbreviations → Declarations → References), v0.4.1, ADR-0018 OOM-cap folded in. Leads with the
+  full-length steady-state 99.7% vs 94.7% result.
+- **Editorial email** — DRAFTED, `docs/papers/GigaByte/editorial-email.md`, NOT yet sent by Felipe:
+  asks (1) APC waiver (independent researcher, no funding) and (2) what GigaDB deposit a *software*
+  Technical Release needs. Only contact is `editorial@gigabytejournal.com` (no per-editor emails; top-3
+  board = Hongling Zhou / Hongfang Zhang / Yannan Fan, all GigaScience Press BGI Shenzhen).
+- **Blocked on Felipe:** send the editorial email; register Segovia at **SciCrunch.org for an RRID**;
+  provide the **Overleaf `oup-contemporary` template `.tex`/`.cls`** (I can't fetch it without his login)
+  so the manuscript can be wrapped to LaTeX for submission.
+- **Still TODO:** at least one **figure** (GigaByte wants figures as separate files — e.g. a latency-CDF
+  or the `live_monitor.py` snapshot); optional workflowhub.eu / Code Ocean deposit; convert `paper.md`
+  → the Overleaf template once the `.cls` is in hand. Submission portal:
+  https://gigabyte-review.rivervalleytechnologies.com/
 
 **If pursuing JOSS later** (blocked until >6 months of distributed public history): fill the
 `# AI usage disclosure` section; ORCID (`0000-0002-8300-7587`) is already in all drafts.

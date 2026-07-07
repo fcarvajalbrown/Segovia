@@ -28,10 +28,21 @@ versioned crates.io + PyPI releases fit this model.
 
 ## Format and platform
 
-GigaByte uses an XML-first publishing platform (not standard LaTeX or Word). Manuscripts are
-submitted via their online system, not as document files. Peer review is questionnaire-style
-with optional open commenting. Post-publication review via Hypothes.is. Reviewers receive DOI
-credit.
+Correction (verified 2026-07-07 against gigabytejournal.com/information-for-authors and
+/technical-release-description): GigaByte **accepts LaTeX, Word (DOC/DOCX), and PDF** — the earlier
+"XML-first, no template" note was wrong. There is a Technical Release **Overleaf template** using the
+`oup-contemporary` document class (`\documentclass[a4paper,num-refs,gigabyte]{oup-contemporary}`); the
+`.cls` is not viewable without an Overleaf login. If submitting LaTeX, upload the PDF plus the `.tex`,
+`.cls`, `.bib` files and figures as a zip. Submission is via the online system at
+https://gigabyte-review.rivervalleytechnologies.com/. Peer review is questionnaire-style with optional
+open commenting; post-publication review via Hypothes.is; reviewers receive DOI credit.
+
+**Required Technical Release structure (in order):** Title/authors → Abstract (~150 words, with an
+"Availability and Implementation" subsection) → Research Area and Classifications → Statement of Need →
+Implementation → Availability of Supporting Source Code and Requirements (mandatory metadata block:
+Project name, Project home page, Operating system(s), Programming language, Other requirements, License,
+RRID, bio.tools ID) → Data Availability Statement → List of Abbreviations → Declarations → Endnotes →
+References (FORCE11 software-citation style). Register the software at SciCrunch.org for an RRID.
 
 ## Data requirements
 
@@ -55,6 +66,6 @@ Not confirmed from the fetched pages. GigaByte was founded on the premise of fas
 
 - Scope is narrower than JOSS: life sciences computational tools, not general scientific
   computing. Confirm scope fit before investing significant writing time.
-- The XML-first platform means no standard LaTeX/Word template — the journal's submission
-  system generates the formatted output. Content must be entered via their online form.
+- LaTeX/Word/PDF are all accepted; a Technical Release Overleaf template (`oup-contemporary` class)
+  exists but its `.cls` needs an Overleaf login to retrieve.
 - Waiver is not guaranteed; contact the editors first.

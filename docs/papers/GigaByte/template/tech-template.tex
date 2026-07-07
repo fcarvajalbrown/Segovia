@@ -1,0 +1,340 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Please note that whilst this template provides a 
+% preview of the typeset manuscript for submission, it 
+% will not necessarily be the final publication layout.
+%
+% letterpaper/a4paper: US/UK paper size toggle
+% num-refs/alpha-refs: numeric/author-year citation and bibliography toggle
+
+\documentclass[a4paper,num-refs,gigabyte]{oup-contemporary}
+
+%%% Journal toggle; only specific options recognised.
+%%% (Only "gigabyte", "gigascience" and "general" are implemented now. Support for other journals is planned.)
+\journal{gigabyte}
+
+\usepackage{graphicx}
+\usepackage{siunitx}
+
+%%% Flushend: You can add this package to automatically balance the final page, but if things go awry (e.g. section contents appearing out-of-order or entire blocks or paragraphs are coloured), remove it!
+% \usepackage{flushend}
+
+\title{Template for GigaByte Journal Technical Report Submissions}
+
+%%% Use the \authfn to add symbols for additional footnotes, if any. 1 is reserved for correspondence emails; then continuing with 2 etc for contributions.
+\author[1,\authfn{1},\authfn{2}]{First Author}
+\author[2,\authfn{1},\authfn{2}]{Second Author}
+\author[2]{Third Author}
+\author[2,\authfn{1}]{Fourth Author}
+
+\affil[1]{First Institution}
+\affil[2]{Second Institution}
+
+%%% Author Notes
+\authnote{\authfn{1}abc@uni.edu; alphbeta@lab.edu}
+\authnote{\authfn{2}Contributed equally.}
+
+%%% Paper category
+\papercat{Paper}
+
+%%% "Short" author for running page header
+\runningauthor{First et al.}
+
+%%% Should only be set by an editor
+\jvolume{00}
+\jnumber{0}
+\jyear{2020}
+
+\begin{document}
+
+\begin{frontmatter}
+\maketitle
+\begin{abstract}
+The Abstract must succinctly describe the high-level functionality and purpose of the software for a diverse, non-specialist audience. 
+At the end, please include an Availability \& Implementation section; this must include the availability and licensing of the Technical Release presented, 
+including links to any relevant code repository and website. Please minimize the use of abbreviations and do not cite references in the abstract. 
+\end{abstract}
+
+\begin{keywords}
+Keyword 1; Keyword 2; Keyword 3 (Three to ten keywords linked from GigaScience/GigaDB list)
+\end{keywords}
+\end{frontmatter}
+
+\section{Introduction to this Template}
+
+\begin{epigraph}{Epigraph source name}
+This is the epigraph text, should you like to add one. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+\end{epigraph}
+
+This is the \LaTeX{} template for GigaByte journal manuscript submissions. \textbf{Please note that whilst this template provides a preview of the typeset manuscript for submission, it will not necessarily be the final publication layout.}
+
+There are important commands in the preamble that you will need to modify for your own manuscript. If you are using this template on Overleaf, please switch the editor to Source code mode to view them; or if you prefer to stay in the Rich Text view, click on the title in the Rich Text view to display the preamble code.
+
+Use the \verb|\journal{...}| command in the preamble so that the correct journal name, logo and colours are loaded automatically. \textbf{Only certain journals and options are supported at this time;} check with your journal's editorial office if your journal is supported.
+
+Alternatively you can re-define \verb|\jname|, \verb|\jlogo| and the \verb|jcolour| explicitly, though check with your journal's editorial office to confirm that this is appropriate.
+
+Specify your manuscript's category with the \verb|\papercat{...}| command in the preamble.
+
+See the sample code in the preamble for a sample of how author and affiliation information can be specified.
+
+Use later sections starting with `Statement of Need' on page~\pageref{sec:background} to write your manuscript. The remainder of this current section will provide some sample \LaTeX{} code for various elements you may want to include in your manuscript.
+
+\subsection{Sectional Headings}
+You can use \verb|\section{...}|, \verb|\subsection{...}| commands to add more sections and subsections to your manuscript. Further sectional levels are provided by \verb|\subsubsection|, \verb|\paragraph| and \verb|\subparagraph|.
+
+\subsection{Citations and References}
+Use the \verb|num-refs| document class option for numerical citations, and \verb|alph-refs| option for author-year citations.
+Use the \verb|\citep| command for parenthetical citations, and \verb|\citet| command for text citations (when using \verb|alpha-refs|).
+This is a citation: \citep{Fan:2004} and here are two more: \citep{Cox:1972,Hear:Holm:Step:quan:2006}.
+Web links and URLs should be given a reference number and included in the reference list rather than within the body of the manuscript.
+
+\begin{quote}
+This is a quote. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+\end{quote}
+
+\begin{itemize}
+\item This is a bullet list.
+\item Another point.
+\item A third point.
+\end{itemize}
+
+This\footnote{This is the footnote text. This is the footnote text. This is the footnote text. This is the footnote text. This is the footnote text.} is a footnote. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+\begin{itemize}
+\item This is a numbered list.
+\item Another point.
+\item A third point.
+\end{itemize}
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+
+\subsubsection{This is a 3rd level heading}
+
+Use \verb|\subsubsection| to get a 3rd level heading.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+
+
+\paragraph{This is a 4th level heading}
+
+Use \verb|\paragraph| to get a 4th level heading.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+
+\subparagraph{This is a 5th level heading}
+
+Use \verb|\subparagraph| to get a 5th level heading.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+
+\subsection{Figures and Tables}
+Figures and tables can be added with the usual \verb|figure| and \verb|table| environments, e.g.~Figure \ref{fig:example} and Table \ref{tab:example}. Use \verb|figure*| and \verb|table*| if you need a two-column wide figure or table, as in Figure \ref{fig:example:wide} and Table \ref{tab:example:wide}. 
+
+If you have a very wide table or figure, you can use \texttt{sidewaystable} or \texttt{sidewaysfigure}, as in Table \ref{tab:example:sideways}: this will be rotated sideways and occupy a \emph{single column} on its own.
+
+If your table or figure is both wide and tall (so it wouldn't fit well in a single column with \texttt{sidewaystable} or \texttt{figure}), 
+you can use \verb|table| or \verb|figure| inside a \verb|landscape| environment for a full-page landscaped alternative. A page break will be inserted \emph{immediately before and after} the \verb|landscape| environment (Table \ref{tab:example:landscape}), so you'll need to carefully position it in a suitable location in your manuscript.
+
+\begin{figure}[bt!] %% preferably at bottom or top of column
+\centering
+\includegraphics{example-image}
+\caption{An example figure}\label{fig:example}
+\end{figure}
+
+\begin{table}[bt!]
+\caption{An example table.}\label{tab:example}
+\begin{tabular}{l r l}
+\toprule
+Item & Quantity & Notes\\
+\midrule
+Widgets & 42 & Over-supplied\textsuperscript{*} \\
+Gadgets & 13 & Under-supplied \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\item This is a table note.
+\item \textsuperscript{*}Another note.
+\end{tablenotes}
+\end{table}
+
+
+\subsection{Some Mathematics Sample}
+
+Let $X_1, X_2, \ldots, X_n$ be a sequence of independent and identically distributed random variables with $\text{E}[X_i] = \mu$ and $\text{Var}[X_i] = \sigma^2 < \infty$, and let
+%
+\begin{equation}
+S_n = \frac{X_1 + X_2 + \cdots + X_n}{n}
+      = \frac{1}{n}\sum_{i}^{n} X_i
+\end{equation}
+%
+denote their mean. Then as $n$ approaches infinity, the random variables $\sqrt{n}(S_n - \mu)$ converge in distribution to a normal $\mathcal{N}(0, \sigma^2)$.
+
+
+\section{Statement of Need}
+\label{sec:background}
+
+This illustrates the research purpose of the work and helps highlight and define the audience. The background and purpose of the work presented should be presented here for a non-specialist audience, If applicable, mention and cite any research that this work would help support.
+
+\section{Implementation}
+
+This should include a description of the overall architecture of the software implementation, along with details of any critical issues and how they were addressed, and should be presented in a reproducible manner. 
+
+For papers presenting a database, you should include a brief description of the protocol for data collection, data curation and quality control, and what is being reported in the article. The user interface should be described and a discussion of the intended uses of the database, and the benefits that are envisioned, should be included, together with data on how its performance and functionality compared with functionally similar existing databases. A case study of the use of the database may be presented. The planned future development of new features, if any, should be mentioned.
+
+Web server and workflow papers must add significant value to a simple command line execution of the underlying software, and include a simple mechanism to try out sample data. Web servers should operate through a well-designed graphical user interface, provide help pages or a tutorial, and work on common operating systems. 
+
+\begin{figure*}%[b!]  %% Add a [b!] if you prefer the wide image to be at the bottm of the page
+\centering
+\includegraphics[width=.7\textwidth]{example-image}
+\caption{An example wide figure. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+}\label{fig:example:wide}
+\end{figure*}
+
+
+
+
+\begin{table*}[bt!]
+\caption{Automobile land speed records (GR 5-10)}\label{tab:example:wide}
+% Use "S" column identifier (from siunitx) to align on decimal point.
+% Use "L", "R" or "C" column identifier for auto-wrapping columns with tabularx.
+\begin{tabularx}{\linewidth}{S l l l r L}
+\toprule
+{Speed (mph)} & {Driver} & {Car} & {Engine} & {Date} & {Extra comments}\\
+\midrule
+407.447     & Craig Breedlove & Spirit of America          & GE J47    & 8/5/63  & (Just to demo a full-width table with auto-wrapping long lines) \\
+413.199     & Tom Green       & Wingfoot Express           & WE J46    & 10/2/64  \\
+434.22      & Art Arfons      & Green Monster              & GE J79    & 10/5/64  \\
+468.719     & Craig Breedlove & Spirit of America          & GE J79    & 10/13/64 \\
+526.277     & Craig Breedlove & Spirit of America          & GE J79    & 10/15/65 \\
+536.712     & Art Arfons      & Green Monster              & GE J79    & 10/27/65 \\
+555.127     & Craig Breedlove & Spirit of America, Sonic 1 & GE J79    & 11/2/65  \\
+576.553     & Art Arfons      & Green Monster              & GE J79    & 11/7/65  \\
+600.601     & Craig Breedlove & Spirit of America, Sonic 1 & GE J79    & 11/15/65 \\
+622.407     & Gary Gabelich   & Blue Flame                 & Rocket    & 10/23/70 \\
+633.468     & Richard Noble   & Thrust 2                   & RR RG 146 & 10/4/83  \\
+763.035     & Andy Green      & Thrust SSC                 & RR Spey   & 10/15/97\\
+\bottomrule
+\end{tabularx}
+
+\begin{tablenotes}
+\item Source is from this website: \url{https://www.sedl.org/afterschool/toolkits/science/pdf/ast_sci_data_tables_sample.pdf}
+\end{tablenotes}
+\end{table*}
+
+
+
+\begin{sidewaystable}
+\caption{Automobile land speed records (GR 5-10). This is the same table as before, but rotated sideways.}
+\label{tab:example:sideways}
+% Use "S" column identifier (from siunitx) to align on decimal point.
+% Use "L", "R" or "C" column identifier for auto-wrapping columns with tabularx.
+\begin{tabularx}{\linewidth}{S l l l r L}
+\toprule
+{Speed (mph)} & {Driver} & {Car} & {Engine} & {Date} & {Extra comments}\\
+\midrule
+407.447     & Craig Breedlove & Spirit of America          & GE J47    & 8/5/63  & (Just to demo a full-width table with auto-wrapping long lines) \\
+413.199     & Tom Green       & Wingfoot Express           & WE J46    & 10/2/64  \\
+434.22      & Art Arfons      & Green Monster              & GE J79    & 10/5/64  \\
+468.719     & Craig Breedlove & Spirit of America          & GE J79    & 10/13/64 \\
+526.277     & Craig Breedlove & Spirit of America          & GE J79    & 10/15/65 \\
+536.712     & Art Arfons      & Green Monster              & GE J79    & 10/27/65 \\
+555.127     & Craig Breedlove & Spirit of America, Sonic 1 & GE J79    & 11/2/65  \\
+576.553     & Art Arfons      & Green Monster              & GE J79    & 11/7/65  \\
+600.601     & Craig Breedlove & Spirit of America, Sonic 1 & GE J79    & 11/15/65 \\
+622.407     & Gary Gabelich   & Blue Flame                 & Rocket    & 10/23/70 \\
+633.468     & Richard Noble   & Thrust 2                   & RR RG 146 & 10/4/83  \\
+763.035     & Andy Green      & Thrust SSC                 & RR Spey   & 10/15/97\\
+\bottomrule
+\end{tabularx}
+
+\begin{tablenotes}
+\item Source is from this website: \url{https://www.sedl.org/afterschool/toolkits/science/pdf/ast_sci_data_tables_sample.pdf}
+\end{tablenotes}
+\end{sidewaystable}
+
+
+\section{Availability of source code and requirements (optional, if code is present)}
+
+Lists the following:
+\begin{itemize}
+\item Project name: e.g.~My bioinformatics project
+\item Project home page: e.g.~\url{http://sourceforge.net/projects/mged}
+\item Operating system(s): e.g.~Platform independent
+\item Programming language: e.g.~Java
+\item Other requirements: e.g.~Java 1.3.1 or higher, Tomcat 4.0 or higher
+\item License: e.g.~GNU GPL, FreeBSD etc.
+\end{itemize}
+
+This needs to be under an \href{http:/opensource.org/licenses}{Open Source Initiative} approved license where practicable compiled running software is made available. If the code is not hosted in a repository the \href{https://github.com/gigascience}{\textit{GigaScience} GitHub repository} is also available for this purpose.
+
+\section{Availability of Test Data (If applicable)}
+
+\textit{GigaByte} requires authors to deposit the data set(s) supporting the results reported in submitted manuscripts in a publicly-accessible data repository such as GigaDB (see GigaDB database \href{http://gigadb.org/site/term}{terms of use} for complete details). This section should be included when supporting data are available and must include the name of the repository and the permanent identifier or accession number and persistent hyperlinks for the data sets (if appropriate). The following format is recommended:
+
+``The data set(s) supporting the results of this article is(are) available in the [repository name] repository, [cite unique persistent identifier].''
+
+\section{Declarations}
+
+\subsection{List of abbreviations}
+If abbreviations are used in the text they should be defined in the text at first use, and a list of abbreviations should be provided in alphabetical order.
+
+\subsection{Ethical Approval (optional)}
+
+Manuscripts reporting studies involving newly produced human or animal data must include a statement on ethics approval and consent including the name of the ethics committee that approved the study and reference number if appropriate. 
+
+If your manuscript does not report on or involve the use of any animal or human data this section is not applicable to your submission. Please state ``Not applicable'' in this section.
+
+\subsection{Competing Interests}
+
+All financial and non-financial competing interests must be declared in this section. 
+Where an author gives no competing interests, the listing will read `The author(s) declare that they have no competing interests'. If you are unsure whether you or any of your co-authors have a competing interest please contact the editorial office.
+
+\subsection{Funding}
+
+All sources of funding for the research reported should be declared. The role of the funding body in the design of the study and collection, analysis, and interpretation of data and in writing the manuscript should be declared. Please use \href{http://www.crossref.org/fundingdata/}{FundRef} to report funding sources and include the award/grant number, and the name of the Principal Investigator of the grant. 
+
+
+\subsection{Author's Contributions}
+
+The individual contributions of authors to the manuscript should be specified in this section. Guidance and criteria for authorship can be found in our \href{https://doi.org/10.1093/gigascience/giy122}{editorial}. We would recommend you follow some kind of standardised taxonomy like the \href{http://docs.casrai.org/CRediT}{CASRAI CRediT} (Contributor Roles Taxonomy).
+
+\section{Acknowledgements}
+
+Please acknowledge anyone who contributed towards the article who does not meet the criteria for authorship including anyone who provided professional writing services or materials.
+
+Authors should obtain permission to acknowledge from all those mentioned in the Acknowledgements section. If you do not have anyone to acknowledge, please write ``Not applicable'' in this section.
+
+See our \href{https://doi.org/10.1093/gigascience/giy122}{editorial} for a more explanation of acknowledgements and authorship criteria. 
+
+%% Specify your .bib file name here, without the extension
+\bibliography{paper-refs}
+
+\begin{landscape}
+\begin{table}
+\caption{Automobile land speed records (GR 5-10). This is again the same table as before, but on a landscaped page. \textbf{Note that a hard page break is inserted immediately before and after \texttt{landscape}}, so you'll need to carefully position such an environment at a suitable location in your manuscript!}
+\label{tab:example:landscape}
+\begin{tabularx}{\linewidth}{S l l l r L}
+\toprule
+{Speed (mph)} & {Driver} & {Car} & {Engine} & {Date} & {Extra comments}\\
+\midrule
+407.447     & Craig Breedlove & Spirit of America          & GE J47    & 8/5/63  & (Just to demo a full-width table with auto-wrapping long lines) \\
+413.199     & Tom Green       & Wingfoot Express           & WE J46    & 10/2/64  \\
+434.22      & Art Arfons      & Green Monster              & GE J79    & 10/5/64  \\
+468.719     & Craig Breedlove & Spirit of America          & GE J79    & 10/13/64 \\
+526.277     & Craig Breedlove & Spirit of America          & GE J79    & 10/15/65 \\
+536.712     & Art Arfons      & Green Monster              & GE J79    & 10/27/65 \\
+555.127     & Craig Breedlove & Spirit of America, Sonic 1 & GE J79    & 11/2/65  \\
+576.553     & Art Arfons      & Green Monster              & GE J79    & 11/7/65  \\
+600.601     & Craig Breedlove & Spirit of America, Sonic 1 & GE J79    & 11/15/65 \\
+622.407     & Gary Gabelich   & Blue Flame                 & Rocket    & 10/23/70 \\
+633.468     & Richard Noble   & Thrust 2                   & RR RG 146 & 10/4/83  \\
+763.035     & Andy Green      & Thrust SSC                 & RR Spey   & 10/15/97\\
+\bottomrule
+\end{tabularx}
+
+\begin{tablenotes}
+\item Source is from this website: \url{https://www.sedl.org/afterschool/toolkits/science/pdf/ast_sci_data_tables_sample.pdf}
+\end{tablenotes}
+\end{table}
+\end{landscape}
+
+\end{document}
