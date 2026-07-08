@@ -167,7 +167,7 @@ fixed seed.
 - **Other requirements:** Python ≥ 3.8 for the bindings (prebuilt abi3 wheels on PyPI); a Rust
   toolchain and `maturin` to build from source
 - **License:** AGPL-3.0-or-later (OSI-approved)
-- **RRID:** to be registered at SciCrunch.org prior to publication
+- **RRID:** SCR_028650
 - **bio.tools ID:** not yet registered
 - **Version reported:** v0.4.1
 

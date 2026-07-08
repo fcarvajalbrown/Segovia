@@ -352,9 +352,11 @@ For-Authors page** (a JS app not machine-readable): abstract word cap, figure li
   asks (1) APC waiver (independent researcher, no funding) and (2) what GigaDB deposit a *software*
   Technical Release needs. Only contact is `editorial@gigabytejournal.com` (no per-editor emails; top-3
   board = Hongling Zhou / Hongfang Zhang / Yannan Fan, all GigaScience Press BGI Shenzhen).
-- **Blocked on Felipe:** send the editorial email; register Segovia at **SciCrunch.org for an RRID**;
-  provide the **Overleaf `oup-contemporary` template `.tex`/`.cls`** (I can't fetch it without his login)
-  so the manuscript can be wrapped to LaTeX for submission.
+- **RRID registered (2026-07-07):** Segovia is now `RRID:SCR_028650` at SciCrunch.org — filled into
+  `docs/papers/GigaByte/paper.md` and `docs/papers/GigaByte/template/paper.tex`.
+- **Blocked on Felipe:** send the editorial email; provide the **Overleaf `oup-contemporary` template
+  `.tex`/`.cls`** (I can't fetch it without his login) so the manuscript can be wrapped to LaTeX for
+  submission.
 - **Still TODO:** at least one **figure** (GigaByte wants figures as separate files — e.g. a latency-CDF
   or the `live_monitor.py` snapshot); optional workflowhub.eu / Code Ocean deposit; convert `paper.md`
   → the Overleaf template once the `.cls` is in hand. Submission portal:
